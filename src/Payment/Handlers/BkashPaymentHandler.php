@@ -2,7 +2,6 @@
 
 namespace Takaden\Payment\Handlers;
 
-use App\Models\Order;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
@@ -55,12 +54,12 @@ class BkashPaymentHandler extends PaymentHandler
         return $response->json();
     }
 
-    public function executePayment($bkashPaymentId)
+    public function executePayment(Request $request)
     {
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
-            ->post('/checkout/payment/execute/'.$bkashPaymentId);
+            ->post('/checkout/payment/execute/' . $request->payment_id);
         $data = $response->json();
         logger($data);
         if ($data && isset($data['trxID']) && isset($data['transactionStatus']) && $data['transactionStatus'] === 'Completed') {
@@ -68,6 +67,7 @@ class BkashPaymentHandler extends PaymentHandler
 
             return true;
         }
+        return false;
     }
 
     public function validateSuccessfulPayment(Request $request): bool
@@ -128,14 +128,5 @@ class BkashPaymentHandler extends PaymentHandler
     protected function isTokenExpired(array $token): bool
     {
         return ((time() - $token['created_at']) < $token['expires_in']) ? false : true;
-    }
-
-    public static function test()
-    {
-        return (new static)->initiatePayment(new Order([
-            'amount' => 445,
-            'id' => 1,
-            'currency' => 'BDT',
-        ]));
     }
 }

@@ -23,7 +23,7 @@ abstract class PaymentHandler
         return PaymentProviders::from($paymentProvider)->getHandler();
     }
 
-    public function executePayment()
+    public function executePayment(Request $request)
     {
         // Override this method in your payment handler class if needed
     }
