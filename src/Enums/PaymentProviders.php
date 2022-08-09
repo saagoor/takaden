@@ -2,6 +2,11 @@
 
 namespace Takaden\Enums;
 
+use Takaden\Payment\Handlers\BkashPaymentHandler;
+use Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
+use Takaden\Payment\Handlers\UpayPaymentHandler;
+use Takaden\Payment\PaymentHandler;
+
 enum PaymentProviders: string
 {
         // Aggregators
@@ -27,5 +32,14 @@ enum PaymentProviders: string
     public static function values(): array
     {
         return array_column(static::cases(), 'value');
+    }
+
+    public function getHandler(): PaymentHandler
+    {
+        return match ($this) {
+            self::BKASH         => new BkashPaymentHandler,
+            self::UPAY          => new UpayPaymentHandler,
+            self::SSLCOMMERZ    => new SSLCommerzPaymentHandler,
+        };
     }
 }

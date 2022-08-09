@@ -18,6 +18,16 @@ abstract class PaymentHandler
 
     abstract public function validateSuccessfulPayment(Request $request): bool;
 
+    public static function create(string $paymentProvider)
+    {
+        return PaymentProviders::from($paymentProvider)->getHandler();
+    }
+
+    public function executePayment()
+    {
+        // Override this method in your payment handler class if needed
+    }
+
     /**
      * Before creating/initiating payemnt
      */
