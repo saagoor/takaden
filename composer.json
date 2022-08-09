@@ -1,17 +1,22 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "saagoor/takaden",
+    "description": "A Laravel package to implement Bangladeshi payment gateways, i.e Bkash, Nagad, Rocket, Upay & SSLCommerz.",
     "keywords": [
-        ":vendor_name",
+        "saagoor",
         "laravel",
-        ":package_slug"
+        "takaden",
+        "bkash",
+        "nagad",
+        "upay",
+        "payment",
+        "gateway"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/saagoor/takaden",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "MH Sagor",
+            "email": "mhsagor91@gmail.com",
             "role": "Developer"
         }
     ],
@@ -35,13 +40,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories"
+            "Takaden\\": "src",
+            "Takaden\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests"
+            "Takaden\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -51,15 +56,19 @@
         "format": "vendor/bin/pint"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Takaden\\TakadenServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Takaden": "Takaden\\Facades\\Takaden"
             }
         }
     },
