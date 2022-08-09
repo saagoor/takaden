@@ -2,10 +2,9 @@
 
 namespace Takaden\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Takaden\Enums\PaymentStatus;
 use Takaden\Enums\Purchasable;
-use Takaden\Models\Purchase;
-use Illuminate\Database\Eloquent\Model;
 
 class Coupon extends Model
 {
@@ -14,7 +13,6 @@ class Coupon extends Model
      *
      * @var array
      */
-
     protected $guarded = [];
 
     /**
@@ -23,19 +21,19 @@ class Coupon extends Model
      * @var array
      */
     protected $casts = [
-        'id'                => 'integer',
-        'code'              => 'string',
-        'amount'            => 'integer',
-        'limit'             => 'integer',
-        'max_uses'          => 'integer',
+        'id' => 'integer',
+        'code' => 'string',
+        'amount' => 'integer',
+        'limit' => 'integer',
+        'max_uses' => 'integer',
         'max_uses_per_customer' => 'integer',
-        'created_by'        => 'integer',
-        'updated_by'        => 'integer',
-        'starts_at'         => 'datetime',
-        'expires_at'        => 'datetime',
-        'is_active'         => 'boolean',
-        'applicable_id'     => 'integer',
-        'applicable_type'   => Purchasable::class,
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
+        'starts_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'is_active' => 'boolean',
+        'applicable_id' => 'integer',
+        'applicable_type' => Purchasable::class,
     ];
 
     public function applicable()
@@ -62,10 +60,10 @@ class Coupon extends Model
     {
         return $query->where(
             fn ($query) => $query
-                ->where('code', 'like', '%' . $term . '%')
-                ->orWhere('amount', 'like', '%' . $term . '%')
-                ->orWhere('amount_type', 'like', '%' . $term . '%')
-                ->orWhere('applicable_type', 'like', '%' . $term . '%')
+                ->where('code', 'like', '%'.$term.'%')
+                ->orWhere('amount', 'like', '%'.$term.'%')
+                ->orWhere('amount_type', 'like', '%'.$term.'%')
+                ->orWhere('applicable_type', 'like', '%'.$term.'%')
         );
     }
 
@@ -83,6 +81,7 @@ class Coupon extends Model
         } else {
             $discount = $this->amount < $price ? $this->amount : $price;
         }
+
         return round($discount);
     }
 }

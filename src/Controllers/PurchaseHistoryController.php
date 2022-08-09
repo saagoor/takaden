@@ -2,8 +2,8 @@
 
 namespace Takaden\Controllers;
 
-use Takaden\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use Takaden\Enums\PaymentStatus;
 use Takaden\Resources\PurchaseResource;
 
 class PurchaseHistoryController extends Controller

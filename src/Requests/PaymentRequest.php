@@ -2,12 +2,12 @@
 
 namespace Takaden\Requests;
 
-use Takaden\Enums\PaymentProviders;
-use Takaden\Enums\Purchasable;
 use App\Rules\Coupon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Takaden\Enums\PaymentProviders;
+use Takaden\Enums\Purchasable;
 
 class PaymentRequest extends FormRequest
 {
@@ -48,14 +48,14 @@ class PaymentRequest extends FormRequest
     public function rules()
     {
         return [
-            'customer_id'       => 'required|integer|exists:customers,id',
-            'provider'          => ['required', Rule::in(PaymentProviders::values())],
-            'is_recurring'      => 'nullable|boolean',
-            'is_rental'         => 'nullable|boolean',
-            'purchasable_id'    => ['required', 'integer', Rule::exists($this->purchasable_type, 'id')],
-            'purchasable_type'  => ['required', 'string', Rule::in(Purchasable::values())],
-            'duration'          => 'required|integer',
-            'coupon'            => ['nullable', new Coupon()],
+            'customer_id' => 'required|integer|exists:customers,id',
+            'provider' => ['required', Rule::in(PaymentProviders::values())],
+            'is_recurring' => 'nullable|boolean',
+            'is_rental' => 'nullable|boolean',
+            'purchasable_id' => ['required', 'integer', Rule::exists($this->purchasable_type, 'id')],
+            'purchasable_type' => ['required', 'string', Rule::in(Purchasable::values())],
+            'duration' => 'required|integer',
+            'coupon' => ['nullable', new Coupon()],
         ];
     }
 }

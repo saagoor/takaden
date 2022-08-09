@@ -2,13 +2,12 @@
 
 namespace Takaden\Controllers;
 
-use Takaden\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Takaden\Enums\PaymentStatus;
 
 class PaymentHistoryController extends Controller
 {
-
     public function __invoke()
     {
         $payments = request()

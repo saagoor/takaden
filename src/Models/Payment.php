@@ -3,19 +3,19 @@
 namespace Takaden\Models;
 
 use App\Models\Customer;
-use Takaden\Enums\PaymentProviders;
-use Takaden\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Takaden\Enums\PaymentProviders;
+use Takaden\Enums\PaymentStatus;
 
 class Payment extends Model
 {
     protected $guarded = ['payable_total'];
 
     protected $casts = [
-        'status'            => PaymentStatus::class,
-        'provider'          => PaymentProviders::class,
-        'paid_at'           => 'datetime',
+        'status' => PaymentStatus::class,
+        'provider' => PaymentProviders::class,
+        'paid_at' => 'datetime',
         'providers_payload' => 'array',
     ];
 
@@ -31,7 +31,7 @@ class Payment extends Model
 
     public function title(): Attribute
     {
-        return Attribute::make(get: fn () => $this->purchase?->getPaymentTitle() . ' ' . $this->purchase?->purchasable?->title);
+        return Attribute::make(get: fn () => $this->purchase?->getPaymentTitle().' '.$this->purchase?->purchasable?->title);
     }
 
     public function payableTotal(): Attribute

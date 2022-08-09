@@ -1,11 +1,11 @@
 <?php
 
-use Takaden\Controllers\CouponsController;
 use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Support\Facades\Route;
+use Takaden\Controllers\CouponsController;
 use Takaden\Controllers\PaymentController;
 use Takaden\Controllers\PaymentHistoryController;
 use Takaden\Controllers\PurchaseHistoryController;
-use Illuminate\Support\Facades\Route;
 
 Route::prefix('payment')
     ->name('payment.')

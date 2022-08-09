@@ -9,7 +9,7 @@ use Takaden\Payment\PaymentHandler;
 
 enum PaymentProviders: string
 {
-        // Aggregators
+    // Aggregators
     case SSLCOMMERZ = 'sslcommerz';
     case AAMARPAY = 'aamarpay';
     case CHECKOUT2 = 'checkout2';
@@ -19,13 +19,13 @@ enum PaymentProviders: string
     case PADDLE = 'paddle';
     case STRIPE = 'stripe';
 
-        // Gateways
+    // Gateways
     case BKASH = 'bkash';
     case NAGAD = 'nagad';
     case ROCKET = 'rocket';
     case UPAY = 'upay';
 
-        // Cash
+    // Cash
     case CASH = 'cash';
     case NONE = '';
 
@@ -37,9 +37,9 @@ enum PaymentProviders: string
     public function getHandler(): PaymentHandler
     {
         return match ($this) {
-            self::BKASH         => new BkashPaymentHandler,
-            self::UPAY          => new UpayPaymentHandler,
-            self::SSLCOMMERZ    => new SSLCommerzPaymentHandler,
+            self::BKASH => new BkashPaymentHandler,
+            self::UPAY => new UpayPaymentHandler,
+            self::SSLCOMMERZ => new SSLCommerzPaymentHandler,
         };
     }
 }

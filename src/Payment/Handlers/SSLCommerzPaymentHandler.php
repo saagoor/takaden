@@ -2,12 +2,12 @@
 
 namespace Takaden\Payment\Handlers;
 
-use Takaden\Enums\PaymentProviders;
-use Takaden\Orderable;
-use Takaden\Payment\PaymentHandler;
 use DGvai\SSLCommerz\SSLCommerz;
 use Exception;
 use Illuminate\Http\Request;
+use Takaden\Enums\PaymentProviders;
+use Takaden\Orderable;
+use Takaden\Payment\PaymentHandler;
 
 class SSLCommerzPaymentHandler extends PaymentHandler
 {
@@ -17,7 +17,7 @@ class SSLCommerzPaymentHandler extends PaymentHandler
     {
         $customer = $order->getTakadenCustomer();
         $email = $customer->email ?? config('mail.from.address', 'hello@example.com');
-        $name = ($customer->name ?? config('app.name') . ' Customer');
+        $name = ($customer->name ?? config('app.name').' Customer');
         $phone = $customer->phone;
 
         $sslc = (new SSLCommerz)
@@ -38,6 +38,7 @@ class SSLCommerzPaymentHandler extends PaymentHandler
         } catch (Exception $e) {
             report($e);
         }
+
         return false;
     }
 }

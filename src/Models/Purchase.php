@@ -3,11 +3,11 @@
 namespace Takaden\Models;
 
 use App\Models\Customer;
-use Takaden\Enums\Purchasable;
 use App\Models\Package;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
 use Illuminate\Support\Carbon;
+use Takaden\Enums\Purchasable;
 
 class Purchase extends Model
 {
@@ -18,16 +18,16 @@ class Purchase extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'purchasable_type'  => Purchasable::class,
-        'is_active'         => 'boolean',
-        'is_trial'          => 'boolean',
-        'trial_ends_at'     => 'datetime',
-        'expires_at'        => 'datetime',
+        'purchasable_type' => Purchasable::class,
+        'is_active' => 'boolean',
+        'is_trial' => 'boolean',
+        'trial_ends_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function getPaymentTitle()
     {
-        return class_basename($this->purchasable_type->value) . ' #' . $this->purchasable_id;
+        return class_basename($this->purchasable_type->value).' #'.$this->purchasable_id;
     }
 
     public function getPurchasableExpireDate(bool $isRental)
@@ -38,6 +38,7 @@ class Purchase extends Model
         if ($isRental) {
             return Carbon::now()->addDays($this->purchasable->rental_duration);
         }
+
         return  null;
     }
 

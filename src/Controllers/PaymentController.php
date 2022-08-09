@@ -2,19 +2,18 @@
 
 namespace Takaden\Controllers;
 
-use Takaden\Actions\GeneratePurchase;
-use Takaden\Models\Purchase;
 use App\Http\Controllers\Controller;
+use Exception;
+use Illuminate\Http\Request;
+use Takaden\Actions\GeneratePurchase;
 use Takaden\Helpers\Currency;
+use Takaden\Models\Purchase;
 use Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
 use Takaden\Payment\PaymentHandler;
 use Takaden\Requests\PaymentRequest;
-use Exception;
-use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-
     protected PaymentHandler $handler;
 
     protected string $redirectBaseUrl;
@@ -22,7 +21,7 @@ class PaymentController extends Controller
     public function __construct()
     {
         $this->handler = new SSLCommerzPaymentHandler;
-        $this->redirectBaseUrl = config('app.frontend_url') . '/payment';
+        $this->redirectBaseUrl = config('app.frontend_url').'/payment';
     }
 
     public function validatePurchase(PaymentRequest $request)
@@ -31,16 +30,17 @@ class PaymentController extends Controller
         $request->merge(['country' => null]); // Ignore user passed country, to get actual currency manually.
         $currency = Currency::current();
         $purchase = new Purchase($request->validated());
-        $price =  $isRental ? ($purchase->purchasable->rental_price[$currency] ?? 0) : ($purchase->purchasable->lifetime_price[$currency] ?? 0);
+        $price = $isRental ? ($purchase->purchasable->rental_price[$currency] ?? 0) : ($purchase->purchasable->lifetime_price[$currency] ?? 0);
+
         return response()->json([
-            'message'   => 'Validation successful.',
-            'result'    => [
-                'data'  => [
+            'message' => 'Validation successful.',
+            'result' => [
+                'data' => [
                     ...$request->validated(),
-                    'is_rental'     => $isRental,
-                    'price'         => $price,
-                ]
-            ]
+                    'is_rental' => $isRental,
+                    'price' => $price,
+                ],
+            ],
         ]);
     }
 
@@ -48,6 +48,7 @@ class PaymentController extends Controller
     {
         $this->handler->beforePaymentCreate($request);
         $purchase = GeneratePurchase::fromRequest($request);
+
         return $this->handler->initiatePayment($purchase);
     }
 
@@ -57,13 +58,15 @@ class PaymentController extends Controller
             $isSuccessful = $this->handler->validateSuccessfulPayment($request);
             if ($isSuccessful) {
                 $this->handler->afterPaymentSuccessful($request);
-                return redirect()->to(url($this->redirectBaseUrl . '/success'));
+
+                return redirect()->to(url($this->redirectBaseUrl.'/success'));
             }
             $this->handler->afterPaymentFailed($request);
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-        return redirect()->to($this->redirectBaseUrl . '/failure');
+
+        return redirect()->to($this->redirectBaseUrl.'/failure');
     }
 
     public function failure(Request $request)
@@ -73,7 +76,8 @@ class PaymentController extends Controller
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-        return redirect()->to($this->redirectBaseUrl . '/failure');
+
+        return redirect()->to($this->redirectBaseUrl.'/failure');
     }
 
     public function cancel(Request $request)
@@ -83,7 +87,8 @@ class PaymentController extends Controller
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-        return redirect()->to($this->redirectBaseUrl . '/failure');
+
+        return redirect()->to($this->redirectBaseUrl.'/failure');
     }
 
     public function webhook(Request $request)
@@ -94,9 +99,10 @@ class PaymentController extends Controller
         } else {
             $this->handler->afterPaymentFailed($request);
         }
+
         return response()->json([
-            'success'   => $isSuccessful,
-            'payload'   => $request->all(),
+            'success' => $isSuccessful,
+            'payload' => $request->all(),
         ]);
     }
 }

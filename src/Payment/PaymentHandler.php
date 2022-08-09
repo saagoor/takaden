@@ -2,13 +2,13 @@
 
 namespace Takaden\Payment;
 
+use Illuminate\Http\Request;
 use Takaden\Enums\PaymentProviders;
 use Takaden\Enums\PaymentStatus;
 use Takaden\Models\Payment;
 use Takaden\Notifications\PaymentNotification;
 use Takaden\Orderable;
 use Takaden\Payable;
-use Illuminate\Http\Request;
 
 abstract class PaymentHandler
 {
@@ -44,10 +44,11 @@ abstract class PaymentHandler
     public function afterPaymentSuccessful(Request $request): Payable
     {
         $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::SUCCESS);
-        if ($payment->order && !$payment->order->is_active) {
+        if ($payment->order && ! $payment->order->is_active) {
             $payment->order->is_active = true;
             $payment->order->save();
         }
+
         return $payment;
     }
 
@@ -62,6 +63,7 @@ abstract class PaymentHandler
         $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::FAILED);
         $payment->order->is_active = false;
         $payment->order->save();
+
         return $payment;
     }
 
@@ -86,6 +88,7 @@ abstract class PaymentHandler
         $payment->update($paymentPayload);
         // Notify the customer
         $payment->customer->notify(new PaymentNotification($payment, $request->all()));
+
         return $payment;
     }
 }
