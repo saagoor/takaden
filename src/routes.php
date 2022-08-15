@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Takaden\Controllers\CouponsController;
 use Takaden\Controllers\PaymentController;

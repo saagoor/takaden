@@ -4,14 +4,15 @@ namespace Takaden\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Takaden\Models\Payment;
+use Takaden\Enums\PaymentStatus;
+use Takaden\Orderable;
 
 class PaymentNotification extends Notification
 {
     use Queueable;
 
-    public Payment $payment;
-
+    public Orderable $orderable;
+    public PaymentStatus $status;
     public array $payload;
 
     /**
@@ -19,9 +20,10 @@ class PaymentNotification extends Notification
      *
      * @return void
      */
-    public function __construct(Payment $payment, array $payload)
+    public function __construct(Orderable $orderable, PaymentStatus $status, array $payload)
     {
-        $this->payment = $payment;
+        $this->orderable = $orderable;
+        $this->status = $status;
         $this->payload = $payload;
     }
 
@@ -45,10 +47,10 @@ class PaymentNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'title' => 'Payment '.$this->payment->status->value,
-            'content' => 'The payment of '.$this->payment->currency.' '.$this->payment->amount.' has been '.$this->payment->status->value,
-            'payment' => $this->payment->toArray(),
-            'payload' => $this->payload,
+            'title'     => 'Payment ' . $this->status->value,
+            'content'   => 'The payment of ' . $this->orderable->currency . ' ' . $this->orderable->amount . ' has been ' . $this->orderable->status->value,
+            'subject'   => $this->orderable->toArray(),
+            'payload'   => $this->payload,
         ];
     }
 }

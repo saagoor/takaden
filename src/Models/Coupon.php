@@ -49,13 +49,6 @@ class Coupon extends Model
             ->whereRelation('payment', 'status', '!=', PaymentStatus::INITIATED);
     }
 
-    public function appliedCustomers()
-    {
-        return $this
-            ->belongsToMany(Customer::class, 'applied_coupons', 'coupon_id', 'customer_id')
-            ->withTimestamps();
-    }
-
     public function scopeLocalSearch($query, $term)
     {
         return $query->where(

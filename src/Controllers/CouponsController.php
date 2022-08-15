@@ -2,14 +2,14 @@
 
 namespace Takaden\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Coupon;
-use App\Rules\Coupon as RulesCoupon;
+use Takaden\Models\Coupon;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Takaden\Enums\Purchasable;
 use Takaden\Helpers\Currency;
+use Takaden\Rules\Coupon as RulesCoupon;
 
 class CouponsController extends Controller
 {

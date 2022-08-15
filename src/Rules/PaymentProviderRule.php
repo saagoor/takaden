@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Rules;
+namespace Takaden\Rules;
 
 use Illuminate\Contracts\Validation\InvokableRule;
 use Takaden\Enums\PaymentProviders;

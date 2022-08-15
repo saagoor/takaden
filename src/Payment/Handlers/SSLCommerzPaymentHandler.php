@@ -11,7 +11,7 @@ use Takaden\Payment\PaymentHandler;
 
 class SSLCommerzPaymentHandler extends PaymentHandler
 {
-    public PaymentProviders $gatewayName = PaymentProviders::SSLCOMMERZ;
+    public PaymentProviders $name = PaymentProviders::SSLCOMMERZ;
 
     public function initiatePayment(Orderable $order)
     {

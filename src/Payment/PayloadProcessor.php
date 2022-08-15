@@ -7,7 +7,7 @@ use Takaden\Enums\PaymentProviders;
 
 class PayloadProcessor
 {
-    public static function process($payload, $provider)
+    public static function process($payload, $provider): array
     {
         return match ($provider) {
             PaymentProviders::SSLCOMMERZ => static::sslCommerz($payload),
@@ -18,12 +18,12 @@ class PayloadProcessor
         };
     }
 
-    public static function paddle($payload)
+    public static function paddle($payload): array
     {
         $billable = json_decode($payload['passthrough'], true);
 
         return [
-            'takaden_transaction_id' => $billable['billable_id'], // Payment ID
+            'takaden_id' => $billable['billable_id'], // Payment ID
             'payment_method' => $payload['payment_method'] ?? 'PADDLE',
             'amount' => $payload['sale_gross'],
             'provider' => PaymentProviders::PADDLE,
@@ -33,10 +33,10 @@ class PayloadProcessor
         ];
     }
 
-    public static function sslCommerz($payload)
+    public static function sslCommerz($payload): array
     {
         return [
-            'takaden_transaction_id' => ($payload['value_a'] ?? null), // Purchase ID
+            'takaden_id' => ($payload['value_a'] ?? null), // Purchase ID
             'payment_method' => $payload['card_issuer'] ?? 'SSL',
             'amount' => $payload['currency_amount'] ?? 0,
             'provider' => PaymentProviders::SSLCOMMERZ,
@@ -47,10 +47,10 @@ class PayloadProcessor
         ];
     }
 
-    public static function bkash($payload)
+    public static function bkash($payload): array
     {
         return [
-            'takaden_transaction_id' => ($payload['value_a'] ?? null),
+            'takaden_id' => ($payload['value_a'] ?? null),
             'payment_method' => 'bkash',
             'amount' => $payload['amount'] ?? 0,
             'currency' => $payload['currency'],
@@ -62,10 +62,10 @@ class PayloadProcessor
         ];
     }
 
-    public static function upay($payload)
+    public static function upay($payload): array
     {
         return [
-            'takaden_transaction_id' => $payload['txn_id'],
+            'takaden_id' => $payload['txn_id'],
             'payment_method' => 'upay',
             'amount' => null,
             'currency' => null,

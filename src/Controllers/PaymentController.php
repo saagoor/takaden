@@ -2,104 +2,58 @@
 
 namespace Takaden\Controllers;
 
-use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
-use Takaden\Actions\GeneratePurchase;
-use Takaden\Helpers\Currency;
-use Takaden\Models\Purchase;
-use Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
+use Illuminate\Routing\Controller;
 use Takaden\Payment\PaymentHandler;
-use Takaden\Requests\PaymentRequest;
 
 class PaymentController extends Controller
 {
-    protected PaymentHandler $handler;
-
-    protected string $redirectBaseUrl;
-
-    public function __construct()
+    public function success(Request $request, string $paymentProvider)
     {
-        $this->handler = new SSLCommerzPaymentHandler;
-        $this->redirectBaseUrl = config('app.frontend_url').'/payment';
-    }
-
-    public function validatePurchase(PaymentRequest $request)
-    {
-        $isRental = ($request->duration > 0 && $request->is_rental);
-        $request->merge(['country' => null]); // Ignore user passed country, to get actual currency manually.
-        $currency = Currency::current();
-        $purchase = new Purchase($request->validated());
-        $price = $isRental ? ($purchase->purchasable->rental_price[$currency] ?? 0) : ($purchase->purchasable->lifetime_price[$currency] ?? 0);
-
-        return response()->json([
-            'message' => 'Validation successful.',
-            'result' => [
-                'data' => [
-                    ...$request->validated(),
-                    'is_rental' => $isRental,
-                    'price' => $price,
-                ],
-            ],
-        ]);
-    }
-
-    public function create(PaymentRequest $request)
-    {
-        $this->handler->beforePaymentCreate($request);
-        $purchase = GeneratePurchase::fromRequest($request);
-
-        return $this->handler->initiatePayment($purchase);
-    }
-
-    public function success(Request $request)
-    {
+        $handler = PaymentHandler::create($paymentProvider);
         try {
-            $isSuccessful = $this->handler->validateSuccessfulPayment($request);
+            $isSuccessful = $handler->validateSuccessfulPayment($request);
             if ($isSuccessful) {
-                $this->handler->afterPaymentSuccessful($request);
-
-                return redirect()->to(url($this->redirectBaseUrl.'/success'));
+                $handler->afterPaymentSuccessful($request);
+                return redirect()->to(config('takaden.redirects.success'));
             }
-            $this->handler->afterPaymentFailed($request);
+            $handler->afterPaymentFailed($request);
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-
-        return redirect()->to($this->redirectBaseUrl.'/failure');
+        return redirect()->to(config('takaden.redirects.failure'));
     }
 
-    public function failure(Request $request)
+    public function failure(Request $request, string $paymentProvider)
     {
         try {
-            $this->handler->afterPaymentFailed($request);
+            PaymentHandler::create($paymentProvider)->afterPaymentFailed($request);
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-
-        return redirect()->to($this->redirectBaseUrl.'/failure');
+        return redirect()->to(config('takaden.redirects.failure'));
     }
 
-    public function cancel(Request $request)
+    public function cancel(Request $request, string $paymentProvider)
     {
         try {
-            $this->handler->afterPaymentCancelled($request);
+            PaymentHandler::create($paymentProvider)->afterPaymentCancelled($request);
         } catch (Exception $e) {
             logger($e->getMessage());
         }
-
-        return redirect()->to($this->redirectBaseUrl.'/failure');
+        return redirect()->to(config('takaden.redirects.failure'));
     }
 
-    public function webhook(Request $request)
+    public function webhook(Request $request, string $paymentProvider)
     {
-        $isSuccessful = $this->handler->validateSuccessfulPayment($request);
+        $handler = PaymentHandler::create($paymentProvider);
+        $isSuccessful = $handler->validateSuccessfulPayment($request);
         if ($isSuccessful) {
-            $this->handler->afterPaymentSuccessful($request);
+            $handler->afterPaymentSuccessful($request);
         } else {
-            $this->handler->afterPaymentFailed($request);
+            $handler->afterPaymentFailed($request);
         }
-
         return response()->json([
             'success' => $isSuccessful,
             'payload' => $request->all(),

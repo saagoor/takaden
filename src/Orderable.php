@@ -2,23 +2,30 @@
 
 namespace Takaden;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Takaden\Enums\PaymentProviders;
 
-interface Orderable
+interface Orderable extends Arrayable
 {
-    public function handleSuccessPayment(Payable $payment);
+    public function getKey();
 
-    public function handleFailPayment(Payable $payment);
+    public function handleSuccessPayment(array $payload);
 
-    public function getTakadenAmount(): float;
+    public function handleFailPayment(array $payload);
+
+    public function handleCancelPayment(array $payload);
+
+    public function getTakadenAmount(): float|int;
 
     public function getTakadenCurrency(): string;
 
-    public function getTakadenUniqueId(): string;
-
-    public function getTakadenRedirectUrl(): string;
+    public function getTakadenRedirectUrl(PaymentProviders $paymentProvider): string;
 
     public function getTakadenPaymentTitle(): string;
 
     public function getTakadenCustomer(): Model;
+
+    public function getTakadenNotifiables(): Collection|array;
 }

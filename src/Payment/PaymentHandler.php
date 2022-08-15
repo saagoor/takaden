@@ -3,16 +3,16 @@
 namespace Takaden\Payment;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Takaden\Enums\PaymentProviders;
 use Takaden\Enums\PaymentStatus;
-use Takaden\Models\Payment;
+use Takaden\Models\Checkout;
 use Takaden\Notifications\PaymentNotification;
 use Takaden\Orderable;
-use Takaden\Payable;
 
 abstract class PaymentHandler
 {
-    public PaymentProviders $name;
+    public PaymentProviders $providerName;
 
     abstract public function initiatePayment(Orderable $order);
 
@@ -21,6 +21,17 @@ abstract class PaymentHandler
     public static function create(string $paymentProvider)
     {
         return PaymentProviders::from($paymentProvider)->getHandler();
+    }
+
+    protected function createCheckout(Orderable $order): Checkout
+    {
+        return Checkout::create([
+            'orderable_id'      => $order->getKey(),
+            'orderable_type'    => $order::class,
+            'amount'            => $order->getTakadenAmount(),
+            'currency'          => $order->getTakadenCurrency(),
+            'payment_provider'  => $this->providerName,
+        ]);
     }
 
     public function executePayment(Request $request)
@@ -41,15 +52,21 @@ abstract class PaymentHandler
      * 2. Mark the order as active.
      * 3. Clear cache of customer's subscription, payment & order history.
      */
-    public function afterPaymentSuccessful(Request $request): Payable
+    public function afterPaymentSuccessful(Request $request): Orderable
     {
-        $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::SUCCESS);
-        if ($payment->order && ! $payment->order->is_active) {
-            $payment->order->is_active = true;
-            $payment->order->save();
-        }
-
-        return $payment;
+        $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
+        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout->update([
+            'payment_provider'  => $this->providerName,
+            'payment_status'    => PaymentStatus::SUCCESS,
+            'payload'           => $paymentPayload,
+        ]);
+        $checkout->orderable->handleSuccessPayment();
+        Notification::send(
+            notifiables: $checkout->orderable->getNotifiables(),
+            notification: new PaymentNotification($checkout->orderable, PaymentStatus::SUCCESS, $paymentPayload),
+        );
+        return $checkout->orderable;
     }
 
     /**
@@ -58,37 +75,41 @@ abstract class PaymentHandler
      * 2. Mark the order as inactive.
      * 3. Clear cache of customer's subscription, payment & order history.
      */
-    public function afterPaymentFailed(Request $request): Payable
+    public function afterPaymentFailed(Request $request): Orderable
     {
-        $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::FAILED);
-        $payment->order->is_active = false;
-        $payment->order->save();
-
-        return $payment;
+        $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
+        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout->update([
+            'payment_provider'  => $this->providerName,
+            'payment_status'    => PaymentStatus::FAILED,
+            'payload'           => $paymentPayload,
+        ]);
+        $checkout->orderable->handleFailPayment();
+        Notification::send(
+            notifiables: $checkout->orderable->getNotifiables(),
+            notification: new PaymentNotification($checkout->orderable, PaymentStatus::FAILED, $paymentPayload),
+        );
+        return $checkout->orderable;
     }
 
     /**
      * After payment cancelled action
      * 1. Update the payment status to 'cancelled'.
      */
-    public function afterPaymentCancelled(Request $request): Payable
+    public function afterPaymentCancelled(Request $request): Orderable
     {
-        return $this->updateStatusAndGetPayment($request, PaymentStatus::CANCELLED);
-    }
-
-    /**
-     * Process the payload came from payment gateway,
-     *  and create or update the payment record according to the payment status
-     */
-    protected function updateStatusAndGetPayment(Request $request, PaymentStatus $status): Payable
-    {
-        $paymentPayload = PayloadProcessor::process($request->all(), $this->gatewayName);
-        $paymentPayload['status'] = $status;
-        $payment = Payment::findOrNew($paymentPayload['payment_id']);
-        $payment->update($paymentPayload);
-        // Notify the customer
-        $payment->customer->notify(new PaymentNotification($payment, $request->all()));
-
-        return $payment;
+        $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
+        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout->update([
+            'payment_provider'  => $this->providerName,
+            'payment_status'    => PaymentStatus::CANCELLED,
+            'payload'           => $paymentPayload,
+        ]);
+        $checkout->orderable->handleCancelPayment();
+        Notification::send(
+            notifiables: $checkout->orderable->getNotifiables(),
+            notification: new PaymentNotification($checkout->orderable, PaymentStatus::CANCELLED, $paymentPayload),
+        );
+        return $checkout->orderable;
     }
 }

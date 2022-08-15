@@ -13,36 +13,37 @@ use Takaden\Payment\PaymentHandler;
 
 class BkashPaymentHandler extends PaymentHandler
 {
-    public PaymentProviders $gatewayName = PaymentProviders::BKASH;
+    public PaymentProviders $name = PaymentProviders::BKASH;
 
     protected array $config;
 
     public function __construct()
     {
         $this->config = [
-            'app_key' => config('takaden.bkash.app_key'),
-            'app_secret' => config('takaden.bkash.app_secret'),
-            'username' => config('takaden.bkash.username'),
-            'password' => config('takaden.bkash.password'),
-            'base_url' => config('takaden.bkash.base_url'),
-            'script_url' => config('takaden.bkash.script_url'),
-            'intent' => config('takaden.bkash.intent'),
+            'app_key' => config('takaden.providers.bkash.app_key'),
+            'app_secret' => config('takaden.providers.bkash.app_secret'),
+            'username' => config('takaden.providers.bkash.username'),
+            'password' => config('takaden.providers.bkash.password'),
+            'base_url' => config('takaden.providers.bkash.base_url'),
+            'script_url' => config('takaden.providers.bkash.script_url'),
+            'intent' => config('takaden.providers.bkash.intent'),
         ];
 
-        if (! $this->config['app_key'] || ! $this->config['app_secret']) {
+        if (!$this->config['app_key'] || !$this->config['app_secret']) {
             throw new Exception('Bkash credentials not found, make sure to add bkash app key & app secret on the .env file.');
         }
     }
 
     public function initiatePayment(Orderable $order)
     {
+        $checkout = $this->createCheckout($order);
         $payload = [
             'app_key' => $this->config['app_key'],
             'app_secret' => $this->config['app_secret'],
             'intent' => 'authorization',
             'amount' => $order->getTakadenAmount(),
             'currency' => $order->getTakadenCurrency(),
-            'merchantInvoiceNumber' => $order->getTakadenUniqueId(),
+            'merchantInvoiceNumber' => $checkout->id,
         ];
 
         $response = $this->httpClient()
@@ -78,7 +79,7 @@ class BkashPaymentHandler extends PaymentHandler
     protected function getToken(): string
     {
         $token = Cache::get('takaden.bkash.token');
-        if ($token && ! $this->isTokenExpiringSoon($token)) {
+        if ($token && !$this->isTokenExpiringSoon($token)) {
             return $token['id_token'];
         }
 
@@ -89,7 +90,7 @@ class BkashPaymentHandler extends PaymentHandler
         $endpoint = '/checkout/token/grant';
 
         // Refresh token if already has a token & it's expiring but not yet expired.
-        if ($token && $this->isTokenExpiringSoon($token) && ! $this->isTokenExpired($token)) {
+        if ($token && $this->isTokenExpiringSoon($token) && !$this->isTokenExpired($token)) {
             $payload['refresh_token'] = $token['refresh_token'];
             $endpoint = '/checkout/token/refresh';
         }
@@ -103,7 +104,7 @@ class BkashPaymentHandler extends PaymentHandler
             ->post($endpoint, $payload);
 
         if ($response->failed() || $response->json('status') === 'fail') {
-            throw new Exception($response->json('msg', 'Something went wrong').', could not get bkash access token.');
+            throw new Exception($response->json('msg', 'Something went wrong') . ', could not get bkash access token.');
         }
 
         $token = $response->json();
