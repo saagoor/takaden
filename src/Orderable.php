@@ -5,7 +5,6 @@ namespace Takaden;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Takaden\Enums\PaymentProviders;
 
 interface Orderable extends Arrayable
 {
@@ -20,8 +19,6 @@ interface Orderable extends Arrayable
     public function getTakadenAmount(): float|int;
 
     public function getTakadenCurrency(): string;
-
-    public function getTakadenRedirectUrl(PaymentProviders $paymentProvider): string;
 
     public function getTakadenPaymentTitle(): string;
 

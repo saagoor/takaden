@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('payment_status')->default(PaymentStatus::INITIATED->value);
             $table->string('currency')->nullable()->default(config('takaden.defaults.currency'));
             $table->float('amount')->nullable();
+            $table->json('payload')->nullable();
             $table->timestamps();
         });
     }

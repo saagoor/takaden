@@ -47,9 +47,9 @@ class PaymentNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'title'     => 'Payment ' . $this->status->value,
-            'content'   => 'The payment of ' . $this->orderable->currency . ' ' . $this->orderable->amount . ' has been ' . $this->orderable->status->value,
-            'subject'   => $this->orderable->toArray(),
+            'title'     => 'Payment ' . $this->status?->value,
+            'content'   => 'The payment of ' . $this->orderable?->currency . ' ' . $this->orderable?->amount . ' has been ' . $this->status?->value,
+            'subject'   => $this->orderable?->toArray(),
             'payload'   => $this->payload,
         ];
     }

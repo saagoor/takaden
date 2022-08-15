@@ -65,14 +65,14 @@ class PayloadProcessor
     public static function upay($payload): array
     {
         return [
-            'takaden_id' => $payload['txn_id'],
+            'takaden_id' => $payload['invoice_id'],
             'payment_method' => 'upay',
             'amount' => null,
             'currency' => null,
             'provider' => PaymentProviders::UPAY,
             'paid_at' => now(),
-            'providers_payment_id' => $payload['trx_id'] ?? '',
-            'providers_transaction_id' => $payload['trx_id'] ?? '',
+            'providers_payment_id' => $payload['trx_id'] ?? null,
+            'providers_transaction_id' => $payload['trx_id'] ?? null,
             'providers_payload' => json_encode($payload),
         ];
     }

@@ -18,8 +18,16 @@ abstract class PaymentHandler
 
     abstract public function validateSuccessfulPayment(Request $request): bool;
 
-    public static function create(string $paymentProvider)
+    public function getStatusFromRedirection(Request $request): PaymentStatus
     {
+        return PaymentStatus::INITIATED;
+    }
+
+    public static function create(string|PaymentProviders $paymentProvider)
+    {
+        if ($paymentProvider instanceof PaymentProviders) {
+            return $paymentProvider->getHandler();
+        }
         return PaymentProviders::from($paymentProvider)->getHandler();
     }
 
@@ -61,9 +69,9 @@ abstract class PaymentHandler
             'payment_status'    => PaymentStatus::SUCCESS,
             'payload'           => $paymentPayload,
         ]);
-        $checkout->orderable->handleSuccessPayment();
+        $checkout->orderable->handleSuccessPayment($paymentPayload);
         Notification::send(
-            notifiables: $checkout->orderable->getNotifiables(),
+            notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::SUCCESS, $paymentPayload),
         );
         return $checkout->orderable;
@@ -84,9 +92,9 @@ abstract class PaymentHandler
             'payment_status'    => PaymentStatus::FAILED,
             'payload'           => $paymentPayload,
         ]);
-        $checkout->orderable->handleFailPayment();
+        $checkout->orderable->handleFailPayment($paymentPayload);
         Notification::send(
-            notifiables: $checkout->orderable->getNotifiables(),
+            notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::FAILED, $paymentPayload),
         );
         return $checkout->orderable;
@@ -105,9 +113,9 @@ abstract class PaymentHandler
             'payment_status'    => PaymentStatus::CANCELLED,
             'payload'           => $paymentPayload,
         ]);
-        $checkout->orderable->handleCancelPayment();
+        $checkout->orderable->handleCancelPayment($paymentPayload);
         Notification::send(
-            notifiables: $checkout->orderable->getNotifiables(),
+            notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::CANCELLED, $paymentPayload),
         );
         return $checkout->orderable;

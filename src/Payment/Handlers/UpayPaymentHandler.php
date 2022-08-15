@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Takaden\Enums\PaymentProviders;
+use Takaden\Enums\PaymentStatus;
 use Takaden\Orderable;
 use Takaden\Payment\PaymentHandler;
 
@@ -53,7 +54,7 @@ class UpayPaymentHandler extends PaymentHandler
                 'merchant_category_code' => $this->config['merchant_code'],
                 'merchant_mobile' => $this->config['merchant_mobile'],
                 'transaction_currency_code' => $order->getTakadenCurrency(),
-                'redirect_url' => $order->getTakadenRedirectUrl($this->providerName),
+                'redirect_url' => route('takaden.checkout.redirection', $this->providerName),
             ]);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['gateway_url'];
@@ -67,12 +68,22 @@ class UpayPaymentHandler extends PaymentHandler
             ->contentType('application/json')
             ->acceptJson()
             ->withToken($this->getAuthToken(), 'UPAY')
-            ->get('/payment/single-payment-status/' . $request->txn_id);
+            ->get('/payment/single-payment-status/' . $request->invoice_id);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['status'] === 'success';
         }
 
         return false;
+    }
+
+    public function getStatusFromRedirection(Request $request): PaymentStatus
+    {
+        // Possible values: success/failed/canceled/pending/expired
+        return match ($request->status) {
+            'success'   => PaymentStatus::SUCCESS,
+            'canceled'  => PaymentStatus::CANCELLED,
+            default     => PaymentStatus::FAILED,
+        };
     }
 
     protected function getAuthToken()

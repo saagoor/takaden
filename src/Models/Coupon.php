@@ -4,7 +4,6 @@ namespace Takaden\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Takaden\Enums\PaymentStatus;
-use Takaden\Enums\Purchasable;
 
 class Coupon extends Model
 {
@@ -33,7 +32,6 @@ class Coupon extends Model
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
         'applicable_id' => 'integer',
-        'applicable_type' => Purchasable::class,
     ];
 
     public function applicable()

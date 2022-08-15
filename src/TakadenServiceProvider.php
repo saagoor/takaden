@@ -20,6 +20,7 @@ class TakadenServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigration('create_takaden_tables')
+            ->hasRoute('web')
             ->hasCommand(TakadenCommand::class);
     }
 }
