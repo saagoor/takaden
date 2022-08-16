@@ -78,11 +78,13 @@ class UpayPaymentHandler extends PaymentHandler
 
     public function getStatusFromRedirection(Request $request): PaymentStatus
     {
-        // Possible values: success/failed/canceled/pending/expired
         return match ($request->status) {
-            'success'   => PaymentStatus::SUCCESS,
-            'canceled'  => PaymentStatus::CANCELLED,
-            default     => PaymentStatus::FAILED,
+            'success'       => PaymentStatus::SUCCESS,
+            'successful'    => PaymentStatus::SUCCESS,
+            'canceled'      => PaymentStatus::CANCELLED,
+            'cancelled'     => PaymentStatus::CANCELLED,
+            'cancel'        => PaymentStatus::CANCELLED,
+            default         => PaymentStatus::FAILED,
         };
     }
 
