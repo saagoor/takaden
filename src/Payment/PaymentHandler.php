@@ -42,16 +42,27 @@ abstract class PaymentHandler
         ]);
     }
 
-    public function executePayment(Request $request)
+    public function executePayment(Request $request): bool
     {
         // Override this method in your payment handler class if needed
+        return false;
     }
 
     /**
      * Before creating/initiating payemnt
      */
-    public function beforePaymentCreate(Request $request): void
+    public function beforeInitiatePayment(Request $request): void
     {
+    }
+    /**
+     * After payment initiate payment
+     */
+    public function afterInitiatePayment(Checkout $checkout, string $providersPaymentId, array $responsePayload): void
+    {
+        $checkout->update([
+            'providers_payment_id'  => $providersPaymentId,
+            'payload'               => $responsePayload,
+        ]);
     }
 
     /**

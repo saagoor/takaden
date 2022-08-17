@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Takaden\Enums\PaymentStatus;
-use Takaden\Models\Checkout;
 use Takaden\Orderable;
 use Takaden\Payment\PaymentHandler;
 
@@ -24,7 +23,11 @@ class CheckoutController extends Controller
 
     public function execute(Request $request, string $paymentProvider)
     {
-        return PaymentHandler::create($paymentProvider)->executePayment($request->payment_id);
+        $isSuccessful = PaymentHandler::create($paymentProvider)->executePayment($request);
+        if ($isSuccessful) {
+            return response()->json(['status' => PaymentStatus::SUCCESS]);
+        }
+        return abort(400, 'Failed to execute payment.');
     }
 
     public function redirection(Request $request, string $paymentProvider)

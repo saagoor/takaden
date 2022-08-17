@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('orderable');
             $table->string('payment_provider');
+            $table->string('providers_payment_id')->nullable();
             $table->string('payment_status')->default(PaymentStatus::INITIATED->value);
             $table->string('currency')->nullable()->default(config('takaden.defaults.currency'));
             $table->float('amount')->nullable();

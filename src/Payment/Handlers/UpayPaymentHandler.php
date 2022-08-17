@@ -57,6 +57,7 @@ class UpayPaymentHandler extends PaymentHandler
                 'redirect_url' => route('takaden.checkout.redirection', $this->providerName),
             ]);
         if ($response->successful() && $data = $response->json('data')) {
+            $this->afterInitiatePayment($checkout, $data['trx_id'], $data);
             return $data['gateway_url'];
         }
         throw new Exception($response->json('message', 'Something went wrong') . '. Unable to initiate payment with upay.');

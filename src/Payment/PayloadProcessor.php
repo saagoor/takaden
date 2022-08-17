@@ -27,7 +27,7 @@ class PayloadProcessor
             'payment_method' => $payload['payment_method'] ?? 'PADDLE',
             'amount' => $payload['sale_gross'],
             'provider' => PaymentProviders::PADDLE,
-            'paid_at' => (isset($payload['event_time']) && $payload['event_time']) ? Carbon::parse($payload['event_time']) : now(),
+            'timestamp' => (isset($payload['event_time']) && $payload['event_time']) ? Carbon::parse($payload['event_time']) : now(),
             'providers_transaction_id' => $payload['order_id'],
             'providers_payload' => json_encode($payload),
         ];
@@ -40,7 +40,7 @@ class PayloadProcessor
             'payment_method' => $payload['card_issuer'] ?? 'SSL',
             'amount' => $payload['currency_amount'] ?? 0,
             'provider' => PaymentProviders::SSLCOMMERZ,
-            'paid_at' => (isset($payload['tran_date']) && $payload['tran_date']) ? Carbon::parse($payload['tran_date']) : now(),
+            'timestamp' => (isset($payload['tran_date']) && $payload['tran_date']) ? Carbon::parse($payload['tran_date']) : now(),
             'providers_payment_id' => $payload['tran_id'] ?? '',
             'providers_transaction_id' => $payload['bank_tran_id'] ?? '',
             'providers_payload' => json_encode($payload),
@@ -50,12 +50,12 @@ class PayloadProcessor
     public static function bkash($payload): array
     {
         return [
-            'takaden_id' => ($payload['value_a'] ?? null),
+            'takaden_id' => $payload['merchantInvoiceNumber'],
             'payment_method' => 'bkash',
-            'amount' => $payload['amount'] ?? 0,
-            'currency' => $payload['currency'],
+            'amount' => $payload['amount'] ?? null,
+            'currency' => $payload['currency'] ?? null,
             'provider' => PaymentProviders::BKASH,
-            'paid_at' => now(),
+            'timestamp' => now(),
             'providers_payment_id' => $payload['paymentID'] ?? '',
             'providers_transaction_id' => $payload['trxID'] ?? '',
             'providers_payload' => json_encode($payload),
@@ -70,7 +70,7 @@ class PayloadProcessor
             'amount' => null,
             'currency' => null,
             'provider' => PaymentProviders::UPAY,
-            'paid_at' => now(),
+            'timestamp' => now(),
             'providers_payment_id' => $payload['trx_id'] ?? null,
             'providers_transaction_id' => $payload['trx_id'] ?? null,
             'providers_payload' => json_encode($payload),

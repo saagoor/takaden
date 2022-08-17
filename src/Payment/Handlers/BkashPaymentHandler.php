@@ -8,12 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Takaden\Enums\PaymentProviders;
+use Takaden\Models\Checkout;
 use Takaden\Orderable;
 use Takaden\Payment\PaymentHandler;
 
 class BkashPaymentHandler extends PaymentHandler
 {
-    public PaymentProviders $name = PaymentProviders::BKASH;
+    public PaymentProviders $providerName = PaymentProviders::BKASH;
 
     protected array $config;
 
@@ -50,12 +51,13 @@ class BkashPaymentHandler extends PaymentHandler
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
             ->post('/checkout/payment/create', $payload);
-        logger($response->json());
-
-        return $response->json();
+        $data = $response->json();
+        logger($data);
+        $this->afterInitiatePayment($checkout, $data['paymentID'], $data);
+        return $data;
     }
 
-    public function executePayment(Request $request)
+    public function executePayment(Request $request): bool
     {
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
@@ -63,11 +65,26 @@ class BkashPaymentHandler extends PaymentHandler
             ->post('/checkout/payment/execute/' . $request->payment_id);
         $data = $response->json();
         logger($data);
-        if ($data && isset($data['trxID']) && isset($data['transactionStatus']) && $data['transactionStatus'] === 'Completed') {
-            $this->afterPaymentSuccessful($data);
 
-            return true;
+        if ($response->successful() && $data && isset($data['trxID']) && isset($data['transactionStatus'])) {
+            // Capture payment if payment is not completed or authorized
+            if (!($data['transactionStatus'] == 'Completed' || $data['transactionStatus'] == 'Authorized')) {
+                $response = $this->httpClient()
+                    ->withHeaders(['x-app-key' => $this->config['app_key']])
+                    ->withToken($this->getToken())
+                    ->post('/checkout/payment/capture/' . $request->payment_id);
+                $data = array_merge($data, $response->json());
+                logger($data);
+            }
+            if ($response->successful() && $data['transactionStatus'] === 'Completed' ||  $data['transactionStatus'] == 'Authorized') {
+                $this->afterPaymentSuccessful($request->merge($data));
+                return true;
+            }
         }
+        if (!isset($data['merchantInvoiceNumber']) || !$data['merchantInvoiceNumber']) {
+            $data['merchantInvoiceNumber'] = Checkout::where('payment_provider', $this->providerName)->where('providers_payment_id', $request->payment_id)->first()?->getKey();
+        }
+        $this->afterPaymentFailed($request->merge($data));
         return false;
     }
 
