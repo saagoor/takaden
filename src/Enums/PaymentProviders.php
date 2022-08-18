@@ -3,6 +3,7 @@
 namespace Takaden\Enums;
 
 use Takaden\Payment\Handlers\BkashPaymentHandler;
+use Takaden\Payment\Handlers\NagadPaymentHandler;
 use Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
 use Takaden\Payment\Handlers\UpayPaymentHandler;
 use Takaden\Payment\PaymentHandler;
@@ -38,6 +39,7 @@ enum PaymentProviders: string
     {
         return match ($this) {
             self::BKASH => new BkashPaymentHandler,
+            self::NAGAD => new NagadPaymentHandler,
             self::UPAY => new UpayPaymentHandler,
             self::SSLCOMMERZ => new SSLCommerzPaymentHandler,
         };

@@ -4,6 +4,7 @@ namespace Takaden\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Takaden\Enums\PaymentProviders;
+use Takaden\Enums\PaymentStatus;
 
 class Checkout extends Model
 {
@@ -13,6 +14,7 @@ class Checkout extends Model
 
     public $casts = [
         'payment_provider'  => PaymentProviders::class,
+        'payment_status'    => PaymentStatus::class,
         'payload'           => 'array',
     ];
 

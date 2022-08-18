@@ -13,6 +13,7 @@ class PayloadProcessor
             PaymentProviders::SSLCOMMERZ => static::sslCommerz($payload),
             PaymentProviders::PADDLE => static::paddle($payload),
             PaymentProviders::BKASH => static::bkash($payload),
+            PaymentProviders::NAGAD => static::nagad($payload),
             PaymentProviders::UPAY => static::upay($payload),
             default => $payload,
         };
@@ -58,6 +59,21 @@ class PayloadProcessor
             'timestamp' => now(),
             'providers_payment_id' => $payload['paymentID'] ?? '',
             'providers_transaction_id' => $payload['trxID'] ?? '',
+            'providers_payload' => json_encode($payload),
+        ];
+    }
+
+    public static function nagad($payload): array
+    {
+        return [
+            'takaden_id' => $payload['order_id'],
+            'payment_method' => 'nagad',
+            'amount' => $payload['amount'] ?? null,
+            'currency' => $payload['currency'] ?? null,
+            'provider' => PaymentProviders::NAGAD,
+            'timestamp' => now(),
+            'providers_payment_id' => $payload['payment_ref_id'] ?? '',
+            'providers_transaction_id' => $payload['payment_ref_id'] ?? '',
             'providers_payload' => json_encode($payload),
         ];
     }

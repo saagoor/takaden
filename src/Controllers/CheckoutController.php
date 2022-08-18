@@ -98,7 +98,7 @@ class CheckoutController extends Controller
     protected function redirectTo(string $url, ?Orderable $orderable = null)
     {
         if (!$orderable) {
-            return $this->redirect()->to(url($url));
+            return redirect()->to(url($url));
         }
         $url .= (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . 'orderable_id=' . $orderable->id . '&orderable_type=' . $orderable::class;
         return redirect()->to(url($url));

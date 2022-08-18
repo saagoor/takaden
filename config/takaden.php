@@ -1,6 +1,11 @@
 <?php
 
-// Config for saagoor/takaden package
+/**
+ * Config for `saagoor/takaden` package
+ * Author: MH Sagor (https://github.com/saagoor)
+ * License MIT
+ */
+
 return [
     'defaults'  => [
         'currency' => 'USD',
@@ -19,6 +24,13 @@ return [
             'app_secret' => env('BKASH_APP_SECRET'),
             'username' => env('BKASH_USERNAME', 'sandboxTestUser'),
             'password' => env('BKASH_PASSWORD', 'hWD@8vtzw0'),
+        ],
+        'nagad' => [
+            'base_url'  => env('NAGAD_BASE_URL', 'http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs'),
+            'merchant_id' => env('NAGAD_MERCHANT_ID'),
+            'merchant_phone' => env('NAGAD_MERCHANT_PHONE'),
+            'public_key' => env('NAGAD_PUBLIC_KEY'),
+            'private_key' => env('NAGAD_PRIVATE_KEY'),
         ],
         'upay'  => [
             'base_url' => env('UPAY_BASE_URL', 'https://uat-pg.upay.systems'),
