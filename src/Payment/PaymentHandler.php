@@ -28,17 +28,18 @@ abstract class PaymentHandler
         if ($paymentProvider instanceof PaymentProviders) {
             return $paymentProvider->getHandler();
         }
+
         return PaymentProviders::from($paymentProvider)->getHandler();
     }
 
     protected function createCheckout(Orderable $order): Checkout
     {
         return Checkout::create([
-            'orderable_id'      => $order->getKey(),
-            'orderable_type'    => $order::class,
-            'amount'            => $order->getTakadenAmount(),
-            'currency'          => $order->getTakadenCurrency(),
-            'payment_provider'  => $this->providerName,
+            'orderable_id' => $order->getKey(),
+            'orderable_type' => $order::class,
+            'amount' => $order->getTakadenAmount(),
+            'currency' => $order->getTakadenCurrency(),
+            'payment_provider' => $this->providerName,
         ]);
     }
 
@@ -54,14 +55,15 @@ abstract class PaymentHandler
     public function beforeInitiatePayment(Request $request): void
     {
     }
+
     /**
      * After payment initiate payment
      */
     public function afterInitiatePayment(Checkout $checkout, string $providersPaymentId, array $responsePayload): void
     {
         $checkout->update([
-            'providers_payment_id'  => $providersPaymentId,
-            'payload'               => $responsePayload,
+            'providers_payment_id' => $providersPaymentId,
+            'payload' => $responsePayload,
         ]);
     }
 
@@ -76,15 +78,16 @@ abstract class PaymentHandler
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
         $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
         $checkout->update([
-            'payment_provider'  => $this->providerName,
-            'payment_status'    => PaymentStatus::SUCCESS,
-            'payload'           => $paymentPayload,
+            'payment_provider' => $this->providerName,
+            'payment_status' => PaymentStatus::SUCCESS,
+            'payload' => $paymentPayload,
         ]);
         $checkout->orderable->handleSuccessPayment($paymentPayload);
         Notification::send(
             notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::SUCCESS, $paymentPayload),
         );
+
         return $checkout->orderable;
     }
 
@@ -99,15 +102,16 @@ abstract class PaymentHandler
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
         $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
         $checkout->update([
-            'payment_provider'  => $this->providerName,
-            'payment_status'    => PaymentStatus::FAILED,
-            'payload'           => $paymentPayload,
+            'payment_provider' => $this->providerName,
+            'payment_status' => PaymentStatus::FAILED,
+            'payload' => $paymentPayload,
         ]);
         $checkout->orderable->handleFailPayment($paymentPayload);
         Notification::send(
             notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::FAILED, $paymentPayload),
         );
+
         return $checkout->orderable;
     }
 
@@ -120,15 +124,16 @@ abstract class PaymentHandler
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
         $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
         $checkout->update([
-            'payment_provider'  => $this->providerName,
-            'payment_status'    => PaymentStatus::CANCELLED,
-            'payload'           => $paymentPayload,
+            'payment_provider' => $this->providerName,
+            'payment_status' => PaymentStatus::CANCELLED,
+            'payload' => $paymentPayload,
         ]);
         $checkout->orderable->handleCancelPayment($paymentPayload);
         Notification::send(
             notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::CANCELLED, $paymentPayload),
         );
+
         return $checkout->orderable;
     }
 }

@@ -14,10 +14,11 @@ class CheckoutController extends Controller
     public function initiate(Request $request, string $paymentProvider)
     {
         $request->validate([
-            'orderable_id'      => 'required',
-            'orderable_type'    => 'required',
+            'orderable_id' => 'required',
+            'orderable_type' => 'required',
         ]);
         $order = $request->orderable_type::findOrFail($request->orderable_id);
+
         return PaymentHandler::create($paymentProvider)->initiatePayment($order);
     }
 
@@ -27,17 +28,19 @@ class CheckoutController extends Controller
         if ($isSuccessful) {
             return response()->json(['status' => PaymentStatus::SUCCESS]);
         }
+
         return abort(400, 'Failed to execute payment.');
     }
 
     public function redirection(Request $request, string $paymentProvider)
     {
         $status = PaymentHandler::create($paymentProvider)->getStatusFromRedirection($request);
+
         return match ($status) {
-            PaymentStatus::SUCCESS      => $this->success($request, $paymentProvider),
-            PaymentStatus::FAILED       => $this->failure($request, $paymentProvider),
-            PaymentStatus::CANCELLED    => $this->cancel($request, $paymentProvider),
-            default                     => ['message' => 'Invalid payment status.'],
+            PaymentStatus::SUCCESS => $this->success($request, $paymentProvider),
+            PaymentStatus::FAILED => $this->failure($request, $paymentProvider),
+            PaymentStatus::CANCELLED => $this->cancel($request, $paymentProvider),
+            default => ['message' => 'Invalid payment status.'],
         };
     }
 
@@ -48,13 +51,16 @@ class CheckoutController extends Controller
             $isSuccessful = $handler->validateSuccessfulPayment($request);
             if ($isSuccessful) {
                 $orderable = $handler->afterPaymentSuccessful($request);
+
                 return $this->redirectTo(config('takaden.redirects.success'), $orderable);
             }
             $orderable = $handler->afterPaymentFailed($request);
+
             return $this->redirectTo(config('takaden.redirects.failure'), $orderable);
         } catch (Exception $e) {
             report($e->getMessage());
         }
+
         return $this->redirectTo(config('takaden.redirects.failure'));
     }
 
@@ -62,10 +68,12 @@ class CheckoutController extends Controller
     {
         try {
             $orderable = PaymentHandler::create($paymentProvider)->afterPaymentFailed($request);
+
             return $this->redirectTo(config('takaden.redirects.failure'), $orderable);
         } catch (Exception $e) {
             report($e->getMessage());
         }
+
         return $this->redirectTo(config('takaden.redirects.failure'));
     }
 
@@ -73,10 +81,12 @@ class CheckoutController extends Controller
     {
         try {
             $orderable = PaymentHandler::create($paymentProvider)->afterPaymentCancelled($request);
+
             return $this->redirectTo(config('takaden.redirects.cancel'), $orderable);
         } catch (Exception $e) {
             report($e->getMessage());
         }
+
         return $this->redirectTo(config('takaden.redirects.cancel'));
     }
 
@@ -89,6 +99,7 @@ class CheckoutController extends Controller
         } else {
             $handler->afterPaymentFailed($request);
         }
+
         return response()->json([
             'success' => $isSuccessful,
             'payload' => $request->all(),
@@ -97,10 +108,11 @@ class CheckoutController extends Controller
 
     protected function redirectTo(string $url, ?Orderable $orderable = null)
     {
-        if (!$orderable) {
+        if (! $orderable) {
             return redirect()->to(url($url));
         }
-        $url .= (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . 'orderable_id=' . $orderable->id . '&orderable_type=' . $orderable::class;
+        $url .= (parse_url($url, PHP_URL_QUERY) ? '&' : '?').'orderable_id='.$orderable->id.'&orderable_type='.$orderable::class;
+
         return redirect()->to(url($url));
     }
 }

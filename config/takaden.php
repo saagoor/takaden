@@ -7,13 +7,13 @@
  */
 
 return [
-    'defaults'  => [
+    'defaults' => [
         'currency' => 'USD',
     ],
     'redirects' => [
-        'success'   => '/checkout/success',
-        'failure'   => '/checkout/failure',
-        'cancel'    => '/checkout/cancel',
+        'success' => '/checkout/success',
+        'failure' => '/checkout/failure',
+        'cancel' => '/checkout/cancel',
     ],
     'providers' => [
         'bkash' => [
@@ -26,13 +26,13 @@ return [
             'password' => env('BKASH_PASSWORD', 'hWD@8vtzw0'),
         ],
         'nagad' => [
-            'base_url'  => env('NAGAD_BASE_URL', 'http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs'),
+            'base_url' => env('NAGAD_BASE_URL', 'http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs'),
             'merchant_id' => env('NAGAD_MERCHANT_ID'),
             'merchant_phone' => env('NAGAD_MERCHANT_PHONE'),
             'public_key' => env('NAGAD_PUBLIC_KEY'),
             'private_key' => env('NAGAD_PRIVATE_KEY'),
         ],
-        'upay'  => [
+        'upay' => [
             'base_url' => env('UPAY_BASE_URL', 'https://uat-pg.upay.systems'),
             'merchant_id' => env('UPAY_MERCHANT_ID'),
             'merchant_key' => env('UPAY_MERCHANT_KEY'),

@@ -13,9 +13,9 @@ class Checkout extends Model
     protected $table = 'takaden_checkouts';
 
     public $casts = [
-        'payment_provider'  => PaymentProviders::class,
-        'payment_status'    => PaymentStatus::class,
-        'payload'           => 'array',
+        'payment_provider' => PaymentProviders::class,
+        'payment_status' => PaymentStatus::class,
+        'payload' => 'array',
     ];
 
     public function orderable()

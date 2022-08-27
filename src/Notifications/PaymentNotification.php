@@ -12,7 +12,9 @@ class PaymentNotification extends Notification
     use Queueable;
 
     public Orderable $orderable;
+
     public PaymentStatus $status;
+
     public array $payload;
 
     /**
@@ -47,10 +49,10 @@ class PaymentNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'title'     => 'Payment ' . $this->status?->value,
-            'content'   => 'The payment of ' . $this->orderable?->currency . ' ' . $this->orderable?->amount . ' has been ' . $this->status?->value,
-            'subject'   => $this->orderable?->toArray(),
-            'payload'   => $this->payload,
+            'title' => 'Payment '.$this->status?->value,
+            'content' => 'The payment of '.$this->orderable?->currency.' '.$this->orderable?->amount.' has been '.$this->status?->value,
+            'subject' => $this->orderable?->toArray(),
+            'payload' => $this->payload,
         ];
     }
 }

@@ -2,8 +2,8 @@
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Takaden\Controllers\CouponsController;
 use Takaden\Controllers\CheckoutController;
+use Takaden\Controllers\CouponsController;
 
 Route::prefix('takaden/checkout')
     ->name('takaden.checkout.')
