@@ -3,7 +3,6 @@
 namespace Takaden\Controllers;
 
 use Exception;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Takaden\Enums\PaymentStatus;
@@ -12,7 +11,7 @@ use Takaden\Payment\PaymentHandler;
 
 class CheckoutController extends Controller
 {
-    public function initiate(FormRequest|Request $request, string $paymentProvider)
+    public function initiate(Request $request, string $paymentProvider)
     {
         $request->validate([
             'orderable_id'      => 'required',
@@ -22,7 +21,7 @@ class CheckoutController extends Controller
         return PaymentHandler::create($paymentProvider)->initiatePayment($order);
     }
 
-    public function execute(FormRequest|Request $request, string $paymentProvider)
+    public function execute(Request $request, string $paymentProvider)
     {
         $isSuccessful = PaymentHandler::create($paymentProvider)->executePayment($request);
         if ($isSuccessful) {
@@ -31,7 +30,7 @@ class CheckoutController extends Controller
         return abort(400, 'Failed to execute payment.');
     }
 
-    public function redirection(FormRequest|Request $request, string $paymentProvider)
+    public function redirection(Request $request, string $paymentProvider)
     {
         $status = PaymentHandler::create($paymentProvider)->getStatusFromRedirection($request);
         return match ($status) {
@@ -42,7 +41,7 @@ class CheckoutController extends Controller
         };
     }
 
-    public function success(FormRequest|Request $request, string $paymentProvider)
+    public function success(Request $request, string $paymentProvider)
     {
         $handler = PaymentHandler::create($paymentProvider);
         try {
@@ -59,7 +58,7 @@ class CheckoutController extends Controller
         return $this->redirectTo(config('takaden.redirects.failure'));
     }
 
-    public function failure(FormRequest|Request $request, string $paymentProvider)
+    public function failure(Request $request, string $paymentProvider)
     {
         try {
             $orderable = PaymentHandler::create($paymentProvider)->afterPaymentFailed($request);
@@ -70,7 +69,7 @@ class CheckoutController extends Controller
         return $this->redirectTo(config('takaden.redirects.failure'));
     }
 
-    public function cancel(FormRequest|Request $request, string $paymentProvider)
+    public function cancel(Request $request, string $paymentProvider)
     {
         try {
             $orderable = PaymentHandler::create($paymentProvider)->afterPaymentCancelled($request);
@@ -81,7 +80,7 @@ class CheckoutController extends Controller
         return $this->redirectTo(config('takaden.redirects.cancel'));
     }
 
-    public function webhook(FormRequest|Request $request, string $paymentProvider)
+    public function webhook(Request $request, string $paymentProvider)
     {
         $handler = PaymentHandler::create($paymentProvider);
         $isSuccessful = $handler->validateSuccessfulPayment($request);
