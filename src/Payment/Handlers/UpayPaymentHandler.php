@@ -3,6 +3,7 @@
 namespace Takaden\Payment\Handlers;
 
 use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -107,6 +108,6 @@ class UpayPaymentHandler extends PaymentHandler
         return Http::baseUrl($this->config['base_url'])
             ->contentType('application/json')
             ->acceptJson()
-            ->retry(times: 3, throw: false);
+            ->retry(3, 0, fn ($exception, $request) => $exception instanceof ConnectionException, false);
     }
 }
