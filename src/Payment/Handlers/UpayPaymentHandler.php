@@ -30,7 +30,7 @@ class UpayPaymentHandler extends PaymentHandler
             'merchant_country' => config('takaden.providers.upay.merchant_country'),
             'merchant_city' => config('takaden.providers.upay.merchant_city'),
         ];
-        if (!$this->config['base_url'] || !$this->config['merchant_id'] || !$this->config['merchant_key'] || !$this->config['merchant_code'] || !$this->config['merchant_name']) {
+        if (! $this->config['base_url'] || ! $this->config['merchant_id'] || ! $this->config['merchant_key'] || ! $this->config['merchant_code'] || ! $this->config['merchant_name']) {
             throw new Exception('Upay credentials not found, make sure to add upay base url, merchant id, merchant key, merchant code & merchant name on the .env file.');
         }
     }
@@ -60,14 +60,14 @@ class UpayPaymentHandler extends PaymentHandler
 
             return $data['gateway_url'];
         }
-        throw new Exception($response->json('message', 'Something went wrong') . '. Unable to initiate payment with upay.');
+        throw new Exception($response->json('message', 'Something went wrong').'. Unable to initiate payment with upay.');
     }
 
     public function validateSuccessfulPayment(Request $request): bool
     {
         $response = $this->httpClient()
             ->withToken($this->getAuthToken(), 'UPAY')
-            ->get('/payment/single-payment-status/' . $request->invoice_id);
+            ->get('/payment/single-payment-status/'.$request->invoice_id);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['status'] === 'success';
         }
@@ -98,7 +98,7 @@ class UpayPaymentHandler extends PaymentHandler
             if ($response->successful() && $data = $response->json('data')) {
                 return $data['token'];
             }
-            throw new Exception($response->json('message', 'Something went wrong.') . ' Unable to get auth token from upay.');
+            throw new Exception($response->json('message', 'Something went wrong.').' Unable to get auth token from upay.');
         });
     }
 

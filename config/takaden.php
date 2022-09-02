@@ -13,7 +13,7 @@ return [
     'redirects' => [
         'success' => env('TAKADEN_REDIRECT_SUCCESS', '/checkout/success'),
         'failure' => env('TAKADEN_REDIRECT_FAILURE', '/checkout/failure'),
-        'cancel' =>  env('TAKADEN_REDIRECT_CANCEL', '/checkout/cancel'),
+        'cancel' => env('TAKADEN_REDIRECT_CANCEL', '/checkout/cancel'),
     ],
     'providers' => [
         'bkash' => [
