@@ -28,6 +28,8 @@ enum PaymentProviders: string
 
     // Cash
     case CASH = 'cash';
+    case BALANCE = 'balance';
+    case BANK_TRANSFER = 'bank_transfer';
     case NONE = '';
 
     public static function values(): array

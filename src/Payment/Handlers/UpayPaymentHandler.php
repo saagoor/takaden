@@ -3,6 +3,7 @@
 namespace Takaden\Payment\Handlers;
 
 use Exception;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -29,7 +30,7 @@ class UpayPaymentHandler extends PaymentHandler
             'merchant_country' => config('takaden.providers.upay.merchant_country'),
             'merchant_city' => config('takaden.providers.upay.merchant_city'),
         ];
-        if (! $this->config['base_url'] || ! $this->config['merchant_id'] || ! $this->config['merchant_key'] || ! $this->config['merchant_code'] || ! $this->config['merchant_name']) {
+        if (!$this->config['base_url'] || !$this->config['merchant_id'] || !$this->config['merchant_key'] || !$this->config['merchant_code'] || !$this->config['merchant_name']) {
             throw new Exception('Upay credentials not found, make sure to add upay base url, merchant id, merchant key, merchant code & merchant name on the .env file.');
         }
     }
@@ -37,9 +38,7 @@ class UpayPaymentHandler extends PaymentHandler
     public function initiatePayment(Orderable $order)
     {
         $checkout = $this->createCheckout($order);
-        $response = Http::baseUrl($this->config['base_url'])
-            ->contentType('application/json')
-            ->acceptJson()
+        $response = $this->httpClient()
             ->withToken($this->getAuthToken(), 'UPAY')
             ->post('/payment/merchant-payment-init/', [
                 'date' => date('Y-m-d'),
@@ -61,16 +60,14 @@ class UpayPaymentHandler extends PaymentHandler
 
             return $data['gateway_url'];
         }
-        throw new Exception($response->json('message', 'Something went wrong').'. Unable to initiate payment with upay.');
+        throw new Exception($response->json('message', 'Something went wrong') . '. Unable to initiate payment with upay.');
     }
 
     public function validateSuccessfulPayment(Request $request): bool
     {
-        $response = Http::baseUrl($this->config['base_url'])
-            ->contentType('application/json')
-            ->acceptJson()
+        $response = $this->httpClient()
             ->withToken($this->getAuthToken(), 'UPAY')
-            ->get('/payment/single-payment-status/'.$request->invoice_id);
+            ->get('/payment/single-payment-status/' . $request->invoice_id);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['status'] === 'success';
         }
@@ -93,9 +90,7 @@ class UpayPaymentHandler extends PaymentHandler
     protected function getAuthToken()
     {
         return Cache::remember('upay_auth_token', now()->addMinutes(10), function () {
-            $response = Http::baseUrl($this->config['base_url'])
-                ->contentType('application/json')
-                ->acceptJson()
+            $response = $this->httpClient()
                 ->post('/payment/merchant-auth/', [
                     'merchant_id' => $this->config['merchant_id'],
                     'merchant_key' => $this->config['merchant_key'],
@@ -103,7 +98,15 @@ class UpayPaymentHandler extends PaymentHandler
             if ($response->successful() && $data = $response->json('data')) {
                 return $data['token'];
             }
-            throw new Exception($response->json('message', 'Something went wrong.').' Unable to get auth token from upay.');
+            throw new Exception($response->json('message', 'Something went wrong.') . ' Unable to get auth token from upay.');
         });
+    }
+
+    protected function httpClient(): PendingRequest
+    {
+        return Http::baseUrl($this->config['base_url'])
+            ->contentType('application/json')
+            ->acceptJson()
+            ->retry(times: 3, throw: false);
     }
 }

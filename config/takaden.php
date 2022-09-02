@@ -8,12 +8,12 @@
 
 return [
     'defaults' => [
-        'currency' => 'USD',
+        'currency' => env('TAKADEN_DEFAULT_CURRENCY', 'BDT'),
     ],
     'redirects' => [
-        'success' => '/checkout/success',
-        'failure' => '/checkout/failure',
-        'cancel' => '/checkout/cancel',
+        'success' => env('TAKADEN_REDIRECT_SUCCESS', '/checkout/success'),
+        'failure' => env('TAKADEN_REDIRECT_FAILURE', '/checkout/failure'),
+        'cancel' =>  env('TAKADEN_REDIRECT_CANCEL', '/checkout/cancel'),
     ],
     'providers' => [
         'bkash' => [
