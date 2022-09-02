@@ -29,20 +29,20 @@ class NagadPaymentHandler extends PaymentHandler
             'public_key' => config('takaden.providers.nagad.public_key'),
             'private_key' => config('takaden.providers.nagad.private_key'),
         ];
-        if (!$this->config['base_url'] || !$this->config['merchant_id'] || !$this->config['merchant_phone'] || !$this->config['public_key'] || !$this->config['private_key']) {
+        if (! $this->config['base_url'] || ! $this->config['merchant_id'] || ! $this->config['merchant_phone'] || ! $this->config['public_key'] || ! $this->config['private_key']) {
             throw new Exception('Nagad credentials are missing, make sure to add nagad credentials on the .env file.');
         }
-        if (!Str::startsWith($this->config['public_key'], "-----BEGIN PUBLIC KEY-----" . PHP_EOL)) {
-            $this->config['public_key'] = "-----BEGIN PUBLIC KEY-----" . PHP_EOL . $this->config['public_key'];
+        if (! Str::startsWith($this->config['public_key'], '-----BEGIN PUBLIC KEY-----'.PHP_EOL)) {
+            $this->config['public_key'] = '-----BEGIN PUBLIC KEY-----'.PHP_EOL.$this->config['public_key'];
         }
-        if (!Str::endsWith($this->config['public_key'], PHP_EOL . "\n-----END PUBLIC KEY-----")) {
-            $this->config['public_key'] .= PHP_EOL . "-----END PUBLIC KEY-----";
+        if (! Str::endsWith($this->config['public_key'], PHP_EOL."\n-----END PUBLIC KEY-----")) {
+            $this->config['public_key'] .= PHP_EOL.'-----END PUBLIC KEY-----';
         }
-        if (!Str::startsWith($this->config['private_key'], "-----BEGIN RSA PRIVATE KEY-----" . PHP_EOL)) {
-            $this->config['private_key'] = "-----BEGIN RSA PRIVATE KEY-----" . PHP_EOL . $this->config['private_key'];
+        if (! Str::startsWith($this->config['private_key'], '-----BEGIN RSA PRIVATE KEY-----'.PHP_EOL)) {
+            $this->config['private_key'] = '-----BEGIN RSA PRIVATE KEY-----'.PHP_EOL.$this->config['private_key'];
         }
-        if (!Str::endsWith($this->config['private_key'], PHP_EOL . "-----END RSA PRIVATE KEY-----")) {
-            $this->config['private_key'] .= PHP_EOL . "-----END RSA PRIVATE KEY-----";
+        if (! Str::endsWith($this->config['private_key'], PHP_EOL.'-----END RSA PRIVATE KEY-----')) {
+            $this->config['private_key'] .= PHP_EOL.'-----END RSA PRIVATE KEY-----';
         }
     }
 
@@ -56,7 +56,7 @@ class NagadPaymentHandler extends PaymentHandler
             'orderId' => $orderId,
             'challenge' => Str::random(40),
         ];
-        $response = $this->httpClient()->post('/check-out/initialize/' . $this->config['merchant_id'] . '/' . $orderId . '?locale=EN', [
+        $response = $this->httpClient()->post('/check-out/initialize/'.$this->config['merchant_id'].'/'.$orderId.'?locale=EN', [
             'accountNumber' => $this->config['merchant_phone'],
             'dateTime' => $initialSensitiveData['datetime'],
             'sensitiveData' => $this->encryptWithPublicKey(json_encode($initialSensitiveData)),
@@ -67,7 +67,7 @@ class NagadPaymentHandler extends PaymentHandler
         if ($response->successful() && isset($data['sensitiveData']) && isset($data['signature']) && $data['sensitiveData'] && $data['signature']) {
             $decryptedData = json_decode($this->decryptWithPrivateKey($data['sensitiveData']), true);
             logger($decryptedData);
-            if (!isset($decryptedData['paymentReferenceId']) || !isset($decryptedData['challenge'])) {
+            if (! isset($decryptedData['paymentReferenceId']) || ! isset($decryptedData['challenge'])) {
                 return throw new Exception('Invalid response from Nagad.');
             }
             $sensitiveData = [
@@ -77,7 +77,7 @@ class NagadPaymentHandler extends PaymentHandler
                 'currencyCode' => sprintf('%03d', Currency::numericCode($order->getTakadenCurrency())),
                 'challenge' => $decryptedData['challenge'],
             ];
-            $response = $this->httpClient()->post('/check-out/complete/' . $decryptedData['paymentReferenceId'], [
+            $response = $this->httpClient()->post('/check-out/complete/'.$decryptedData['paymentReferenceId'], [
                 'sensitiveData' => $this->encryptWithPublicKey(json_encode($sensitiveData)),
                 'signature' => $this->signWithPrivateKey(json_encode($sensitiveData)),
                 'merchantCallbackURL' => route('takaden.checkout.redirection', $this->providerName),
@@ -102,7 +102,7 @@ class NagadPaymentHandler extends PaymentHandler
 
     public function validateSuccessfulPayment(Request $request): bool
     {
-        $response = $this->httpClient()->get('/verify/payment/' . $request->payment_ref_id);
+        $response = $this->httpClient()->get('/verify/payment/'.$request->payment_ref_id);
         $data = $response->json();
         logger($data);
         if ($response->successful() && $data && isset($data['status']) && $data['status'] == 'Success') {
