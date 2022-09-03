@@ -98,10 +98,11 @@ class BkashPaymentHandler extends PaymentHandler
         if (! isset($data['merchantInvoiceNumber']) || ! $data['merchantInvoiceNumber']) {
             $data['merchantInvoiceNumber'] = Checkout::where('payment_provider', $this->providerName)->where('providers_payment_id', $request->payment_id)->first()?->getKey();
         }
+        logger($request->merge($data));
         $this->afterPaymentFailed($request->merge($data));
         // Early abort with bkash gateway error message
         if (isset($data['errorMessage']) && $data['errorMessage']) {
-            abort(400, $data['errorMessage']);
+            abort(400, "bKash gateway error: " . $data['errorMessage']);
         }
 
         return false;
