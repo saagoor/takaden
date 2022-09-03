@@ -83,8 +83,9 @@ class BkashPaymentHandler extends PaymentHandler
 
                 return true;
             }
-        } else if ($data && isset($data['errorCode']) && (in_array((int)$data['errorCode'], [2029, 2062, 2068]))) {
-            // Verify, incase the payment has already been completed
+        } else if ($response->serverError() || ($data && isset($data['errorCode']) && (in_array((int)$data['errorCode'], [2029, 2062, 2068])))) {
+            // Verify, request fails
+            // or the payment has already been completed
             logger("Verify, incase the payment has already been completed");
             if ($this->validateSuccessfulPayment($request)) {
                 logger('Payment is successful');
