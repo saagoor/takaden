@@ -83,17 +83,17 @@ class BkashPaymentHandler extends PaymentHandler
 
                 return true;
             }
-        } else if ($response->serverError() || ($data && isset($data['errorCode']) && (in_array((int)$data['errorCode'], [2029, 2062, 2068])))) {
+        } elseif ($response->serverError() || ($data && isset($data['errorCode']) && (in_array((int) $data['errorCode'], [2029, 2062, 2068])))) {
             // Verify, request fails
             // or the payment has already been completed
-            logger("Verify, incase the payment has already been completed");
+            logger('Verify, incase the payment has already been completed');
             if ($this->validateSuccessfulPayment($request)) {
                 logger('Payment is successful');
                 $this->afterPaymentSuccessful($request->merge($data));
 
                 return true;
             }
-            logger("Payment is not successful");
+            logger('Payment is not successful');
         }
         // Add 'merchantInvoiceNumber' with the payload for payment identification
         if (! isset($data['merchantInvoiceNumber']) || ! $data['merchantInvoiceNumber']) {
@@ -103,7 +103,7 @@ class BkashPaymentHandler extends PaymentHandler
         $this->afterPaymentFailed($request->merge($data));
         // Early abort with bkash gateway error message
         if (isset($data['errorMessage']) && $data['errorMessage']) {
-            abort(400, "bKash gateway error: " . $data['errorMessage']);
+            abort(400, 'bKash gateway error: '.$data['errorMessage']);
         }
 
         return false;
