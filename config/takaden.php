@@ -10,6 +10,9 @@ return [
     'defaults' => [
         'currency' => env('TAKADEN_DEFAULT_CURRENCY', 'BDT'),
     ],
+    'checkout'  => [
+        'route_prefix' => env('TAKADEN_CHECKOUT_ROUTE_PREFIX', 'takaden/checkout'),
+    ],
     'redirects' => [
         'success' => env('TAKADEN_REDIRECT_SUCCESS', '/checkout/success'),
         'failure' => env('TAKADEN_REDIRECT_FAILURE', '/checkout/failure'),

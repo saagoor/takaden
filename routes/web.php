@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Takaden\Controllers\CheckoutController;
 use Takaden\Controllers\CouponsController;
 
-Route::prefix('takaden/checkout')
+Route::prefix(config('takaden.checkout.route_prefix', 'takaden/checkout'))
     ->name('takaden.checkout.')
     ->withoutMiddleware(VerifyCsrfToken::class)
     ->group(function () {
