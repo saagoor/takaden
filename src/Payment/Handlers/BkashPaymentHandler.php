@@ -31,7 +31,7 @@ class BkashPaymentHandler extends PaymentHandler
             'intent' => config('takaden.providers.bkash.intent'),
         ];
 
-        if (! $this->config['app_key'] || ! $this->config['app_secret']) {
+        if (!$this->config['app_key'] || !$this->config['app_secret']) {
             throw new Exception('Bkash credentials not found, make sure to add bkash app key & app secret on the .env file.');
         }
     }
@@ -63,17 +63,17 @@ class BkashPaymentHandler extends PaymentHandler
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
-            ->post('/checkout/payment/execute/'.$request->payment_id);
+            ->post('/checkout/payment/execute/' . $request->payment_id);
         $data = $response->json();
         logger('Execution');
         logger($data);
         if ($response->successful() && $data && isset($data['trxID']) && isset($data['transactionStatus'])) {
             // Capture payment if payment is not completed or authorized
-            if (! ($data['transactionStatus'] == 'Completed' || $data['transactionStatus'] == 'Authorized')) {
+            if (!($data['transactionStatus'] == 'Completed' || $data['transactionStatus'] == 'Authorized')) {
                 $response = $this->httpClient()
                     ->withHeaders(['x-app-key' => $this->config['app_key']])
                     ->withToken($this->getToken())
-                    ->post('/checkout/payment/capture/'.$request->payment_id);
+                    ->post('/checkout/payment/capture/' . $request->payment_id);
                 logger('Capture');
                 logger($response->json());
                 $data = array_merge($data, $response->json());
@@ -96,16 +96,42 @@ class BkashPaymentHandler extends PaymentHandler
             logger('Payment is not successful');
         }
         // Add 'merchantInvoiceNumber' with the payload for payment identification
-        if (! isset($data['merchantInvoiceNumber']) || ! $data['merchantInvoiceNumber']) {
+        if (!isset($data['merchantInvoiceNumber']) || !$data['merchantInvoiceNumber']) {
             $data['merchantInvoiceNumber'] = Checkout::where('payment_provider', $this->providerName)->where('providers_payment_id', $request->payment_id)->first()?->getKey();
         }
         logger($request->merge($data));
         $this->afterPaymentFailed($request->merge($data));
         // Early abort with bkash gateway error message
         if (isset($data['errorMessage']) && $data['errorMessage']) {
-            abort(400, 'bKash gateway error: '.$data['errorMessage']);
+            abort(400, 'bKash gateway error: ' . $data['errorMessage']);
         }
 
+        return false;
+    }
+
+    public function refundPayment(Checkout $checkout): bool
+    {
+        if (!isset($checkout->payload['providers_transaction_id']) || !$checkout->payload['providers_transaction_id']) {
+            throw new Exception('Unable to refund, transaction ID not found.');
+        }
+        $payload = [
+            'paymentID' => $checkout->payment_id,
+            'amount'    => $checkout->amount,
+            'trxID'     => $checkout->payload['providers_transaction_id'],
+            'sku'       => $checkout->id,
+            'reason'    => 'Refund',
+        ];
+        $response = $this->httpClient()
+            ->withHeaders(['x-app-key' => $this->config['app_key']])
+            ->withToken($this->getToken())
+            ->post('/checkout/payment/refund');
+        $data = $response->json();
+        logger('Execution');
+        logger($data);
+        if ($response->successful() && $data && array_key_exists('transactionStatus', $data) && ($data['transactionStatus'] === 'Completed')) {
+            $this->afterPaymentRefunded(request()->merge($payload)->merge($data));
+            return true;
+        }
         return false;
     }
 
@@ -114,7 +140,7 @@ class BkashPaymentHandler extends PaymentHandler
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
-            ->get('/checkout/payment/query/'.$request->payment_id);
+            ->get('/checkout/payment/query/' . $request->payment_id);
         logger('Query');
         logger($response->json());
         logger($request->all());
@@ -125,7 +151,7 @@ class BkashPaymentHandler extends PaymentHandler
     protected function getToken(): string
     {
         $token = Cache::get('takaden.bkash.token');
-        if ($token && ! $this->isTokenExpiringSoon($token)) {
+        if ($token && !$this->isTokenExpiringSoon($token)) {
             return $token['id_token'];
         }
 
@@ -136,7 +162,7 @@ class BkashPaymentHandler extends PaymentHandler
         $endpoint = '/checkout/token/grant';
 
         // Refresh token if already has a token & it's expiring but not yet expired.
-        if ($token && $this->isTokenExpiringSoon($token) && ! $this->isTokenExpired($token)) {
+        if ($token && $this->isTokenExpiringSoon($token) && !$this->isTokenExpired($token)) {
             $payload['refresh_token'] = $token['refresh_token'];
             $endpoint = '/checkout/token/refresh';
         }
@@ -150,7 +176,7 @@ class BkashPaymentHandler extends PaymentHandler
             ->post($endpoint, $payload);
 
         if ($response->failed() || $response->json('status') === 'fail') {
-            throw new Exception($response->json('msg', 'Something went wrong').', could not get bkash access token.');
+            throw new Exception($response->json('msg', 'Something went wrong') . ', could not get bkash access token.');
         }
 
         $token = $response->json();

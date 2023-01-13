@@ -23,6 +23,11 @@ abstract class PaymentHandler
         return PaymentStatus::INITIATED;
     }
 
+    public function refundPayment(Checkout $checkout): bool
+    {
+        return false;
+    }
+
     public static function create(string|PaymentProviders $paymentProvider)
     {
         if ($paymentProvider instanceof PaymentProviders) {
@@ -132,6 +137,24 @@ abstract class PaymentHandler
         Notification::send(
             notifiables: $checkout->orderable->getTakadenNotifiables(),
             notification: new PaymentNotification($checkout->orderable, PaymentStatus::CANCELLED, $paymentPayload),
+        );
+
+        return $checkout->orderable;
+    }
+
+    public function afterPaymentRefunded(Request $request)
+    {
+        $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
+        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout->update([
+            'payment_provider' => $this->providerName,
+            'payment_status' => PaymentStatus::REFUNDED,
+            'payload' => $paymentPayload,
+        ]);
+        $checkout->orderable->handleRefundPayment($paymentPayload);
+        Notification::send(
+            notifiables: $checkout->orderable->getTakadenNotifiables(),
+            notification: new PaymentNotification($checkout->orderable, PaymentStatus::REFUNDED, $paymentPayload),
         );
 
         return $checkout->orderable;
