@@ -196,7 +196,7 @@ class BkashPaymentHandler extends PaymentHandler
         };
     }
 
-    public function getPaymentInfo(Checkout $checkout)
+    public function getPaymentInfo(Checkout $checkout): array
     {
         if (! isset($checkout->payload['providers_transaction_id']) || ! $checkout->payload['providers_transaction_id']) {
             throw new Exception('Unable to refund, transaction ID not found.');

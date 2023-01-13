@@ -38,6 +38,11 @@ abstract class PaymentHandler
         return $checkout->payment_status;
     }
 
+    public function getPaymentInfo(Checkout $checkout): array
+    {
+        return $checkout->payload;
+    }
+
     public static function create(string|PaymentProviders $paymentProvider)
     {
         if ($paymentProvider instanceof PaymentProviders) {
