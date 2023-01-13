@@ -124,7 +124,7 @@ class BkashPaymentHandler extends PaymentHandler
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
-            ->post('/checkout/payment/refund');
+            ->post('/checkout/payment/refund', $payload);
         $data = $response->json();
         logger('Execution');
         logger($data);
