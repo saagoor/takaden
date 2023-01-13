@@ -33,6 +33,11 @@ abstract class PaymentHandler
         return false;
     }
 
+    public function getPaymentStatus(Checkout $checkout): PaymentStatus
+    {
+        return $checkout->payment_status;
+    }
+
     public static function create(string|PaymentProviders $paymentProvider)
     {
         if ($paymentProvider instanceof PaymentProviders) {

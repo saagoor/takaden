@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Takaden\Enums\PaymentProviders;
+use Takaden\Enums\PaymentStatus;
 use Takaden\Models\Checkout;
 use Takaden\Orderable;
 use Takaden\Payment\PaymentHandler;
@@ -168,6 +169,31 @@ class BkashPaymentHandler extends PaymentHandler
         logger($request->all());
 
         return false;
+    }
+
+    public function getPaymentStatus(Checkout $checkout): PaymentStatus
+    {
+        $response = $this->httpClient()
+            ->withHeaders(['x-app-key' => $this->config['app_key']])
+            ->withToken($this->getToken())
+            ->get('/checkout/payment/query/'.$checkout->providers_payment_id);
+        $data = $response->json();
+        logger('Query');
+        logger($data);
+        if (! $response->successful() || ! $data || ! array_key_exists('transactionStatus', $data)) {
+            throw new Exception('Unable to get payment status. '.($data['statusMessage'] ?? ''));
+        }
+
+        return match ($data['transactionStatus']) {
+            'Initiated' => PaymentStatus::INITIATED,
+            'Completed' => PaymentStatus::SUCCESS,
+            'Authorized' => PaymentStatus::SUCCESS,
+            'Pending' => PaymentStatus::PENDING,
+            'Failed' => PaymentStatus::FAILED,
+            'Canceled' => PaymentStatus::CANCELLED,
+            'Refunded' => PaymentStatus::REFUNDED,
+            default => $checkout->payment_status,
+        };
     }
 
     protected function getToken(): string
