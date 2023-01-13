@@ -28,6 +28,11 @@ abstract class PaymentHandler
         return false;
     }
 
+    public function getRefundStatus(Checkout $checkout): bool
+    {
+        return false;
+    }
+
     public static function create(string|PaymentProviders $paymentProvider)
     {
         if ($paymentProvider instanceof PaymentProviders) {

@@ -126,13 +126,33 @@ class BkashPaymentHandler extends PaymentHandler
             ->withToken($this->getToken())
             ->post('/checkout/payment/refund', $payload);
         $data = $response->json();
-        logger('Execution');
+        logger('Refund');
         logger($data);
         if ($response->successful() && $data && array_key_exists('transactionStatus', $data) && ($data['transactionStatus'] === 'Completed')) {
             $this->afterPaymentRefunded(request()->merge($payload)->merge($data));
 
             return true;
         }
+
+        return false;
+    }
+
+    public function getRefundStatus(Checkout $checkout): bool
+    {
+        if (! isset($checkout->payload['providers_transaction_id']) || ! $checkout->payload['providers_transaction_id']) {
+            throw new Exception('Unable to refund, transaction ID not found.');
+        }
+        $payload = [
+            'paymentID' => $checkout->providers_payment_id,
+            'trxID' => $checkout->payload['providers_transaction_id'],
+        ];
+        $response = $this->httpClient()
+            ->withHeaders(['x-app-key' => $this->config['app_key']])
+            ->withToken($this->getToken())
+            ->post('/checkout/payment/refund', $payload);
+        $data = $response->json();
+
+        logger($data);
 
         return false;
     }
