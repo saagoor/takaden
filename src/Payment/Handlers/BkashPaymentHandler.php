@@ -196,6 +196,22 @@ class BkashPaymentHandler extends PaymentHandler
         };
     }
 
+    public function getPaymentInfo(Checkout $checkout)
+    {
+        if (! isset($checkout->payload['providers_transaction_id']) || ! $checkout->payload['providers_transaction_id']) {
+            throw new Exception('Unable to refund, transaction ID not found.');
+        }
+        $response = $this->httpClient()
+            ->withHeaders(['x-app-key' => $this->config['app_key']])
+            ->withToken($this->getToken())
+            ->get('/checkout/payment/search/'.$checkout->payload['providers_transaction_id']);
+        $data = $response->json();
+        logger('Search');
+        logger($data);
+
+        return $data;
+    }
+
     protected function getToken(): string
     {
         $token = Cache::get('takaden.bkash.token');
