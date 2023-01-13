@@ -115,7 +115,7 @@ class BkashPaymentHandler extends PaymentHandler
             throw new Exception('Unable to refund, transaction ID not found.');
         }
         $payload = [
-            'paymentID' => $checkout->payment_id,
+            'paymentID' => $checkout->providers_payment_id,
             'amount' => $checkout->amount,
             'trxID' => $checkout->payload['providers_transaction_id'],
             'sku' => $checkout->id,
