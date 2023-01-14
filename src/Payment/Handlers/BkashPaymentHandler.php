@@ -186,13 +186,17 @@ class BkashPaymentHandler extends PaymentHandler
 
         return match ($data['transactionStatus']) {
             'Initiated' => PaymentStatus::INITIATED,
+            'Pending' => PaymentStatus::PENDING,
+            'Pending Authorized' => PaymentStatus::PENDING,
             'Completed' => PaymentStatus::SUCCESS,
             'Authorized' => PaymentStatus::SUCCESS,
-            'Pending' => PaymentStatus::PENDING,
-            'Failed' => PaymentStatus::FAILED,
             'Canceled' => PaymentStatus::CANCELLED,
+            'Cancelled' => PaymentStatus::CANCELLED,
             'Refunded' => PaymentStatus::REFUNDED,
-            default => $checkout->payment_status,
+            'Expired' => PaymentStatus::FAILED,
+            'Failed' => PaymentStatus::FAILED,
+            'Declined' => PaymentStatus::FAILED,
+            default => PaymentStatus::FAILED,
         };
     }
 
