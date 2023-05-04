@@ -51,13 +51,13 @@ class PayloadProcessor
     public static function bkash($payload): array
     {
         return [
-            'takaden_id' => $payload['merchantInvoiceNumber'],
+            'takaden_id' => $payload['merchantInvoiceNumber'] ?? '',
             'payment_method' => 'bkash',
             'amount' => $payload['amount'] ?? null,
             'currency' => $payload['currency'] ?? null,
             'provider' => PaymentProviders::BKASH,
             'timestamp' => now(),
-            'providers_payment_id' => $payload['paymentID'] ?? '',
+            'providers_payment_id' => $payload['paymentID'] ?? $payload['payment_id'] ?? '',
             'providers_transaction_id' => $payload['trxID'] ?? '',
             'providers_payload' => json_encode($payload),
         ];
