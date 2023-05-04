@@ -20,9 +20,10 @@ abstract class PaymentHandler
 
     protected function getCallbackUrl(): string
     {
-        if(app()->environment('local')){
+        if (app()->environment('local')) {
             return str_replace('.test', '.com', route('takaden.checkout.redirection', $this->providerName));
         }
+
         return route('takaden.checkout.redirection', $this->providerName);
     }
 
