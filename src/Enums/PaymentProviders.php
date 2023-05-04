@@ -3,6 +3,7 @@
 namespace Takaden\Enums;
 
 use Takaden\Payment\Handlers\BkashPaymentHandler;
+use Takaden\Payment\Handlers\BkashUrlBasedPaymentHandler;
 use Takaden\Payment\Handlers\NagadPaymentHandler;
 use Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
 use Takaden\Payment\Handlers\UpayPaymentHandler;
@@ -40,7 +41,7 @@ enum PaymentProviders: string
     public function getHandler(): PaymentHandler
     {
         return match ($this) {
-            self::BKASH => new BkashPaymentHandler,
+            self::BKASH => config('takaden.providers.bkash.checkout_mode') === 'url_based' ? new BkashUrlBasedPaymentHandler : new BkashPaymentHandler,
             self::NAGAD => new NagadPaymentHandler,
             self::UPAY => new UpayPaymentHandler,
             self::SSLCOMMERZ => new SSLCommerzPaymentHandler,

@@ -20,6 +20,7 @@ return [
     ],
     'providers' => [
         'bkash' => [
+            'checkout_mode' => env('BKASH_CHECKOUT_MODE', 'url_based'), // 'url_based' or 'auth_and_capture' or 'tokenized'
             'base_url' => env('BKASH_BASE_URL', 'https://checkout.sandbox.bka.sh/v1.2.0-beta'),
             'script_url' => env('BKASH_SCRIPT_URL', 'https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js'),
             'intent' => env('BKASH_PAYMENT_INTENT', 'sale'),

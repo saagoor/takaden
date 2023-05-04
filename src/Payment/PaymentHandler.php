@@ -18,6 +18,14 @@ abstract class PaymentHandler
 
     abstract public function validateSuccessfulPayment(Request $request): bool;
 
+    protected function getCallbackUrl(): string
+    {
+        if(app()->environment('local')){
+            return str_replace('.test', '.com', route('takaden.checkout.redirection', $this->providerName));
+        }
+        return route('takaden.checkout.redirection', $this->providerName);
+    }
+
     public function getStatusFromRedirection(Request $request): PaymentStatus
     {
         return PaymentStatus::INITIATED;

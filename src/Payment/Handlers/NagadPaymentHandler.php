@@ -80,7 +80,7 @@ class NagadPaymentHandler extends PaymentHandler
             $response = $this->httpClient()->post('/check-out/complete/'.$decryptedData['paymentReferenceId'], [
                 'sensitiveData' => $this->encryptWithPublicKey(json_encode($sensitiveData)),
                 'signature' => $this->signWithPrivateKey(json_encode($sensitiveData)),
-                'merchantCallbackURL' => route('takaden.checkout.redirection', $this->providerName),
+                'merchantCallbackURL' => $this->getCallbackUrl(),
             ]);
             $data = $response->json();
             logger($data);

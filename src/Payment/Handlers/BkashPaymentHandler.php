@@ -35,6 +35,10 @@ class BkashPaymentHandler extends PaymentHandler
         if (! $this->config['app_key'] || ! $this->config['app_secret']) {
             throw new Exception('Bkash credentials not found, make sure to add bkash app key & app secret on the .env file.');
         }
+
+        if (! in_array(config('takaden.providers.bkash.checkout_mode'), ['url_based', 'auth_and_capture', 'tokenized'])) {
+            throw new Exception('The given bKash checkout mode is not correct or supported.');
+        }
     }
 
     public function initiatePayment(Orderable $order)
@@ -61,10 +65,14 @@ class BkashPaymentHandler extends PaymentHandler
 
     public function executePayment(Request $request): bool
     {
+        $paymentId = $request->payment_id ?? $request->paymentID ?? null;
+        if (! $paymentId) {
+            throw new Exception('Unable to validate payment, payment ID not found.');
+        }
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
-            ->post('/checkout/payment/execute/'.$request->payment_id);
+            ->post('/checkout/payment/execute/'.$paymentId);
         $data = $response->json();
         logger('Execution');
         logger($data);
@@ -74,7 +82,7 @@ class BkashPaymentHandler extends PaymentHandler
                 $response = $this->httpClient()
                     ->withHeaders(['x-app-key' => $this->config['app_key']])
                     ->withToken($this->getToken())
-                    ->post('/checkout/payment/capture/'.$request->payment_id);
+                    ->post('/checkout/payment/capture/'.$paymentId);
                 logger('Capture');
                 logger($response->json());
                 $data = array_merge($data, $response->json());
@@ -98,7 +106,7 @@ class BkashPaymentHandler extends PaymentHandler
         }
         // Add 'merchantInvoiceNumber' with the payload for payment identification
         if (! isset($data['merchantInvoiceNumber']) || ! $data['merchantInvoiceNumber']) {
-            $data['merchantInvoiceNumber'] = Checkout::where('payment_provider', $this->providerName)->where('providers_payment_id', $request->payment_id)->first()?->getKey();
+            $data['merchantInvoiceNumber'] = Checkout::where('payment_provider', $this->providerName)->where('providers_payment_id', $paymentId)->first()?->getKey();
         }
         logger($request->merge($data));
         $this->afterPaymentFailed($request->merge($data));
@@ -160,26 +168,39 @@ class BkashPaymentHandler extends PaymentHandler
 
     public function validateSuccessfulPayment(Request $request): bool
     {
+        $paymentId = $request->payment_id ?? $request->paymentID ?? null;
+        if (! $paymentId) {
+            throw new Exception('Unable to validate payment, payment ID not found.');
+        }
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
-            ->withToken($this->getToken())
-            ->get('/checkout/payment/query/'.$request->payment_id);
-        logger('Query');
-        logger($response->json());
-        logger($request->all());
+            ->withToken($this->getToken(), '')
+            ->get('/checkout/payment/query/'.$paymentId);
+
+        $data = $response->json();
+        if (
+            $response->successful() &&
+            $data && isset($data['trxID']) && isset($data['transactionStatus']) &&
+            ($data['transactionStatus'] == 'Completed' || $data['transactionStatus'] == 'Authorized')
+        ) {
+            $request->merge($data);
+
+            return true;
+        }
 
         return false;
     }
 
     public function getPaymentStatus(Checkout $checkout): PaymentStatus
     {
+        if (! $checkout->providers_payment_id) {
+            throw new Exception('Unable to get payment status, payment ID not found.');
+        }
         $response = $this->httpClient()
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
             ->get('/checkout/payment/query/'.$checkout->providers_payment_id);
         $data = $response->json();
-        logger('Query');
-        logger($data);
         if (! $response->successful() || ! $data || ! array_key_exists('transactionStatus', $data)) {
             throw new Exception('Unable to get payment status. '.($data['statusMessage'] ?? ''));
         }
@@ -210,8 +231,6 @@ class BkashPaymentHandler extends PaymentHandler
             ->withToken($this->getToken())
             ->get('/checkout/payment/search/'.$checkout->payload['providers_transaction_id']);
         $data = $response->json();
-        logger('Search');
-        logger($data);
 
         return $data;
     }
