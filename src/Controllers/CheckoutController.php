@@ -58,7 +58,7 @@ class CheckoutController extends Controller
 
             return $this->redirectTo(config('takaden.redirects.failure'), $orderable);
         } catch (Exception $e) {
-            report($e->getMessage());
+            report($e);
         }
 
         return $this->redirectTo(config('takaden.redirects.failure'));
@@ -71,7 +71,7 @@ class CheckoutController extends Controller
 
             return $this->redirectTo(config('takaden.redirects.failure'), $orderable);
         } catch (Exception $e) {
-            report($e->getMessage());
+            report($e);
         }
 
         return $this->redirectTo(config('takaden.redirects.failure'));
@@ -84,7 +84,7 @@ class CheckoutController extends Controller
 
             return $this->redirectTo(config('takaden.redirects.cancel'), $orderable);
         } catch (Exception $e) {
-            report($e->getMessage());
+            report($e);
         }
 
         return $this->redirectTo(config('takaden.redirects.cancel'));
