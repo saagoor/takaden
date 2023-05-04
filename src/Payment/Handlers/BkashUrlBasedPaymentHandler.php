@@ -44,6 +44,7 @@ class BkashUrlBasedPaymentHandler extends BkashPaymentHandler
             'Pending Authorized' => PaymentStatus::PENDING,
             'Failed' => PaymentStatus::FAILED,
             'Aborted' => PaymentStatus::CANCELLED,
+            'cancel' => PaymentStatus::CANCELLED,
             'cancelled' => PaymentStatus::CANCELLED,
             'Cancelled' => PaymentStatus::CANCELLED,
             'Declined' => PaymentStatus::FAILED,

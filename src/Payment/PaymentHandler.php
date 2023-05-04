@@ -105,7 +105,7 @@ abstract class PaymentHandler
     public function afterPaymentSuccessful(Request $request): Orderable
     {
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
-        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout = $this->getCheckoutRecordFromPayload($paymentPayload);
         $checkout->update([
             'payment_provider' => $this->providerName,
             'payment_status' => PaymentStatus::SUCCESS,
@@ -129,7 +129,7 @@ abstract class PaymentHandler
     public function afterPaymentFailed(Request $request): Orderable
     {
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
-        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout = $this->getCheckoutRecordFromPayload($paymentPayload);
         $checkout->update([
             'payment_provider' => $this->providerName,
             'payment_status' => PaymentStatus::FAILED,
@@ -151,7 +151,7 @@ abstract class PaymentHandler
     public function afterPaymentCancelled(Request $request): Orderable
     {
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
-        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout = $this->getCheckoutRecordFromPayload($paymentPayload);
         $checkout->update([
             'payment_provider' => $this->providerName,
             'payment_status' => PaymentStatus::CANCELLED,
@@ -169,7 +169,7 @@ abstract class PaymentHandler
     public function afterPaymentRefunded(Request $request)
     {
         $paymentPayload = PayloadProcessor::process($request->all(), $this->providerName);
-        $checkout = Checkout::findOrFail($paymentPayload['takaden_id']);
+        $checkout = $this->getCheckoutRecordFromPayload($paymentPayload);
         $checkout->update([
             'payment_provider' => $this->providerName,
             'payment_status' => PaymentStatus::REFUNDED,
@@ -182,5 +182,19 @@ abstract class PaymentHandler
         );
 
         return $checkout->orderable;
+    }
+
+    protected function getCheckoutRecordFromPayload(array $payload): Checkout
+    {
+        if($payload['takaden_id']){
+            return Checkout::findOrFail($payload['takaden_id']);
+        }
+        if($payload['providers_payment_id']){
+            return Checkout::where('providers_payment_id', $payload['providers_payment_id'])->firstOrFail();
+        }
+        if($payload['providers_transaction_id']){
+            return Checkout::where('providers_transaction_id', $payload['providers_transaction_id'])->firstOrFail();
+        }
+        throw new \Exception('Checkout record not found');
     }
 }
