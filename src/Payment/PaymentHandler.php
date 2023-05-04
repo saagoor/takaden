@@ -186,13 +186,13 @@ abstract class PaymentHandler
 
     protected function getCheckoutRecordFromPayload(array $payload): Checkout
     {
-        if($payload['takaden_id']){
+        if ($payload['takaden_id']) {
             return Checkout::findOrFail($payload['takaden_id']);
         }
-        if($payload['providers_payment_id']){
+        if ($payload['providers_payment_id']) {
             return Checkout::where('providers_payment_id', $payload['providers_payment_id'])->firstOrFail();
         }
-        if($payload['providers_transaction_id']){
+        if ($payload['providers_transaction_id']) {
             return Checkout::where('providers_transaction_id', $payload['providers_transaction_id'])->firstOrFail();
         }
         throw new \Exception('Checkout record not found');
