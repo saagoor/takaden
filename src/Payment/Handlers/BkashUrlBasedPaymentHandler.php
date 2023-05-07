@@ -16,7 +16,7 @@ class BkashUrlBasedPaymentHandler extends BkashPaymentHandler
             'mode' => '0011',
             'payerReference' => $order->getTakadenCustomer()->id,
             'callbackURL' => $this->getCallbackUrl(),
-            'intent' => 'authorization',
+            'intent' => 'sale',
             'amount' => $order->getTakadenAmount(),
             'currency' => $order->getTakadenCurrency(),
             'merchantInvoiceNumber' => $checkout->id,
