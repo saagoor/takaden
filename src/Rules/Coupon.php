@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use Takaden\Helpers\Currency;
 use Takaden\Models\Coupon as ModelsCoupon;
 
-class Coupon implements Rule, DataAwareRule
+class Coupon implements DataAwareRule, Rule
 {
     /**
      * All of the data under validation.

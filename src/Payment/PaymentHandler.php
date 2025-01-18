@@ -81,9 +81,7 @@ abstract class PaymentHandler
     /**
      * Before creating/initiating payemnt
      */
-    public function beforeInitiatePayment(Request $request): void
-    {
-    }
+    public function beforeInitiatePayment(Request $request): void {}
 
     /**
      * After payment initiate payment
